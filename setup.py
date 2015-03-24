@@ -6,8 +6,8 @@ setup(
   description = 'Package for detecting regions of linkage disequilibrium in the human genome',
   author = 'Tomaz Berisa',
   author_email = 'tomaz.berisa@gmail.com',
-  url = 'https://github.com/peterldowns/mypackage', # use the URL to the github repo
-  download_url = 'https://github.com/peterldowns/mypackage/tarball/0.1', # I'll explain this in a second
-  keywords = ['testing', 'logging', 'example'], # arbitrary keywords
+  url = 'https://bitbucket.org/tomazberisa/ldetect', 
+  download_url = 'https://bitbucket.org/tomazberisa/ldetect/get/0.1.tar.gz', 
+  keywords = ['LD', 'linkage disequilibrium', 'genome', 'bioinformatics', 'ldetect'], 
   classifiers = [],
 )
