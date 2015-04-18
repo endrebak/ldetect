@@ -1,8 +1,5 @@
 # LDetect
 
-By Tomaz Berisa, March 2015
-
-# Installation
+## Installation
 
 $ pip install ldetect
-
