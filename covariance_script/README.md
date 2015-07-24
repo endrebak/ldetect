@@ -13,7 +13,7 @@ NOTE: two parameters are hard-coded. These are the effective population size (se
 
 Example usage:
 
->tabix -h ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20110521/ALL.chr2.phase1_release_v3.20101123.snps_indels_svs.genotypes.vcf.gz 2:39967768-40367768 | python calc_covariance.py exampledata/chr2.interpolated_genetic_map.gz testout.gz exampledata/eurinds
+>tabix -h ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20110521/ALL.chr2.phase1_release_v3.20101123.snps_indels_svs.genotypes.vcf.gz 2:39967768-40067768 | python calc_covariance.py exampledata/chr2.interpolated_genetic_map.gz testout.gz exampledata/eurinds
 
 This will output the covariance matrix to testout.gz. The columns are:
 
