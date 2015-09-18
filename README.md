@@ -1,5 +1,21 @@
 # LDetect
 
+## Prerequisites
+
+LDetect requires python3 to run
+
+## Installatioon
+
+The following command will install LDetect in python's ```site-packages``` directory
+
+```
+pip3 install ldetect
+```
+
+## Running LDetect
+
+LDetect comes with a set of example scripts, located in the ```examples/``` directory. Example data is also provided in ```examples/example_data```.
+
 ## Input data
 
 ### Genetic maps
