@@ -152,4 +152,5 @@ python3 P03_extract_bpoints.py --name=chr2 --dataset_path=example_data/cov_matri
 ### Output:
 
 .bed file with columns:
+
 ```[chromosome name] [region start] [region stop]```
