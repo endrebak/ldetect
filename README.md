@@ -135,6 +135,8 @@ This example will output the covariance matrix to ```vector-EUR-chr2-39967768-40
 python3 P02_minima_pipeline.py --input_fname=<vector_fname>  --chr_name=<chromosome_name> --dataset_path=<path_to_covariance_matrix_root> --n_snps_bw_bpoints=<N_SNPs> --out_fname=<pickle_fname>
 ```
 
+This file (P02_minima_pipeline.py) can be tweaked to remove all but the low-pass filter with local search algorithm in order to reduce total runtime.
+
 ### Example:
 
 ```
@@ -143,7 +145,7 @@ python3 P02_minima_pipeline.py --input_fname=example_data/vector/vector-EUR-chr2
 
 ### Output:
 
-.pickle file with minima and various metrics for using uniform breakpoints, uniform breakpoints with local search, breakpoints with low-pass filter, and breakpoints with low-pass filter and local search. This file can be tweaked to remove all but the last algorithm in order to reduce total runtime.
+.pickle file with minima and various metrics for using uniform breakpoints, uniform breakpoints with local search, breakpoints with low-pass filter, and breakpoints with low-pass filter and local search.
 
 ## Step 5 - Extract minima from .pickle to .bed file
 
