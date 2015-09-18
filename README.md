@@ -25,7 +25,7 @@ https://github.com/joepickrell/1000-genomes-genetic-maps
 
 ### Reference panel
 
-1000 Genomes used as example:
+1000 Genomes Phase 1 used as example:
 [ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20110521/](ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20110521/)
 
 ## Step 1 - Partition chromosome(s)
