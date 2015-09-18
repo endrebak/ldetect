@@ -13,6 +13,7 @@ import pickle
 import numpy as np
 import datetime
 import math
+import json
 
 import ldetect.baselib.flat_file_consts as cnst
 import ldetect.baselib.flat_file as flat
@@ -26,7 +27,7 @@ import ldetect.pipeline_elements.E08_local_search as local_search
 
 import commanderline.commander_line as cl
 
-def pipeline(input_fname, chr_name, dataset_path, n_snps_bw_bpoints, begin=-1, end=-1, trackback_delta=200, trackback_step=20, init_search_location=1000):
+def pipeline(input_fname, chr_name, dataset_path, n_snps_bw_bpoints, out_fname, begin=-1, end=-1, trackback_delta=200, trackback_step=20, init_search_location=1000):
     config=cnst.return_conf(dataset_path)
     # begin, end = flat.first_last(chr_name, cnst.const[dataset], begin, end)
     begin, end = flat.first_last(chr_name, config, begin, end)
@@ -81,7 +82,7 @@ def pipeline(input_fname, chr_name, dataset_path, n_snps_bw_bpoints, begin=-1, e
     # breakpoint_loci_local_search = run_local_search_complete(chr_name, breakpoint_loci, begin, end, cnst.const[dataset], metric_out)
     breakpoint_loci_local_search = run_local_search_complete(chr_name, breakpoint_loci, begin, end, config, metric_out)
     
-    # RUN METRIC AGAIN W/ NEW BREAKPOINTS FROM FOURIER
+    # RUN METRIC AGAIN W/ NEW BREAKPOINTS FROM FOURIER LOCAL SEARCH
     flat.print_log_msg('* Calculating metric for new fourier breakpoints...')
     
     # metric_out_local_search = apply_metric(chr_name, begin, end, cnst.const[dataset], breakpoint_loci_local_search['loci'])    
@@ -122,10 +123,10 @@ def pipeline(input_fname, chr_name, dataset_path, n_snps_bw_bpoints, begin=-1, e
     t = datetime.datetime.now()
     t_formatted = t.strftime('%Y_%m_%d_%H_%M_%S')
 
-    pickle_dump_fname = 'pickle-'+dataset+'-'+chr_name+'-'+str(n_bpoints)+'-'+str(begin)+'-'+str(end)+'-'+t_formatted+'.pickle'
-    with open(pickle_dump_fname, 'wb') as f_out:
+    # pickle_dump_fname = 'pickle-'+dataset+'-'+chr_name+'-'+str(n_bpoints)+'-'+str(begin)+'-'+str(end)+'-'+t_formatted+'.pickle'
+    with open(out_fname, 'wb') as f_out:
         pickle.dump(pickle_out, f_out)
-    
+        
     flat.print_log_msg('Done')
 
 def midpoint(a, b):
