@@ -16,7 +16,7 @@ pip install ldetect
 
 LDetect comes with a set of example scripts, located in the ```examples/``` directory. Example data is also provided in ```examples/example_data```.
 
-## Input data
+## Datasets
 
 ### Genetic maps
 
