@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-LDetect requires python3 to run
+LDetect requires python3 to run, all other requirements should be installed by pip (below).
 
 ## Installation
 
