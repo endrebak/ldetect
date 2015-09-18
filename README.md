@@ -9,7 +9,7 @@ LDetect requires python3 to run
 The following command will install LDetect in python's ```site-packages``` directory
 
 ```
-pip3 install ldetect
+pip install ldetect
 ```
 
 ## Running LDetect
