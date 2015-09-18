@@ -25,8 +25,8 @@ https://github.com/joepickrell/1000-genomes-genetic-maps
 
 ### Reference panel
 
-Reference panel example:
-[ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20110521/](ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20110521/)[ALL.chr2.phase1_release_v3.20101123.snps_indels_svs.genotypes.vcf.gz]
+Reference panel (1000 Genomes used as example):
+[ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20110521/](ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20110521/)
 
 ## Step 1 - Partition chromosome(s)
 
