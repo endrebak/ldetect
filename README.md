@@ -4,7 +4,7 @@
 
 LDetect requires python3 to run
 
-## Installatioon
+## Installation
 
 The following command will install LDetect in python's ```site-packages``` directory
 
