@@ -10,7 +10,7 @@ indfile = open(sys.argv[2]) #list of individuals
 NE = float(sys.argv[3])
 # CUTOFF = 1e-7
 CUTOFF = float(sys.argv[4])
-outfile = gzip.open(sys.argv[5], "w") # outfile file
+outfile = gzip.open(sys.argv[5], "wt") # outfile file
 
 inds = list()
 # for line in indfile.xreadlines():
