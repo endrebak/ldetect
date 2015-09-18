@@ -109,11 +109,15 @@ then downstream scripts EXPECT covariance matrix files to be in subdirectories n
 
 ### Usage:
 
-```python3 P01_matrix_to_vector_pipeline.py --dataset_path=<path_to_covariance_matrix_root> --name=<chromosome_name> --out_fname=<vector_fname>```
+```
+python3 P01_matrix_to_vector_pipeline.py --dataset_path=<path_to_covariance_matrix_root> --name=<chromosome_name> --out_fname=<vector_fname>
+```
 
 ### Example:
 
-```python3 P01_matrix_to_vector_pipeline.py --dataset_path=example_data/cov_matrix/ --name=chr2 --out_fname=example_data/vector/vector-EUR-chr2-39967768-40067768.txt.gz```
+```
+python3 P01_matrix_to_vector_pipeline.py --dataset_path=example_data/cov_matrix/ --name=chr2 --out_fname=example_data/vector/vector-EUR-chr2-39967768-40067768.txt.gz
+```
 
 ### Output:
 
