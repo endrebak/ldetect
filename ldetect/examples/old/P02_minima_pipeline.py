@@ -26,6 +26,81 @@ import ldetect.pipeline_elements.E08_local_search as local_search
 
 import commanderline.commander_line as cl
 
+# Script start
+
+# def main(argv=None):
+#     '''
+#     -i vector input file
+#     -n number of minima
+#     -b begin
+#     -e end
+#     -c chromosome name
+#     -d dataset (orig_data or synth_data)
+#     '''
+    
+#     mandatory_opts = {'-i', '-n', '-b', '-e', '-c', '-d'}
+
+#     # Credit for arg parsing to Guido van Rossum
+#     if argv is None:
+#         argv = sys.argv
+
+#     flat.print_log_msg('Run parameters: ' + ' '.join(argv))
+
+#     try:
+# #         opts, args = getopt.getopt(argv[1:], 'b:c:d:e:i:h:n', ['ini=','help'])
+#         opts, args = getopt.getopt(argv[1:], 'b:c:d:e:i:n:h', ['help'])
+#     except getopt.error as msg:
+#         print(msg)
+#         return print_opt_arg_error()
+    
+#     input_fname = None
+#     n_minima = None
+#     begin = None
+#     end = None
+#     chr_name = None
+#     dataset = None
+
+#     # process options
+    
+#     user_opts = set()
+#     for o, a in opts:
+#         user_opts.add(o)
+#         if o in ('-h', '--help'):
+#             print(main.__doc__)
+#             return(0)
+#         elif o == '-i':
+#             input_fname = a
+#         elif o == '-n':
+#             n_minima = int(a)
+#         elif o == '-b':
+#             begin = int(a)
+#         elif o == '-e':
+#             end = int(a)
+#         elif o == '-c':
+#             chr_name = a
+#         elif o == '-d':
+#             dataset = a
+# #         elif o == '--ini':
+# #             ini_fname = a
+#         else:
+#             print('Error: Unkown option '+o)
+#             return print_opt_arg_error()
+
+#     for o in mandatory_opts:
+#         if o not in user_opts:
+#             print('Error: Missing mandatory option: '+o)
+#             return print_opt_arg_error()
+
+#     # process arguments
+#     for arg in args:
+#         #process(arg) # process() is defined elsewhere 
+#         print("Error: Unkown argument: "+arg)
+#         return print_opt_arg_error() 
+
+#     pipeline(input_fname, chr_name, n_minima, begin, end, dataset, argv)
+
+#     print('Done.')
+
 def pipeline(input_fname, chr_name, dataset_path, n_snps_bw_bpoints, begin=-1, end=-1, trackback_delta=200, trackback_step=20, init_search_location=1000):
     config=cnst.return_conf(dataset_path)
     # begin, end = flat.first_last(chr_name, cnst.const[dataset], begin, end)

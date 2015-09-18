@@ -74,3 +74,25 @@ Caveat:
 If the output directory for the covariance matrix is:
 example_data/cov_matrix/
 then downstream scripts EXPECT covariance matrix files to be in subdirectories named chr<chr_number>/ and to be named chr<chr_number>.<start>.<stop>.gz, where <start> and <stop> correspond to values from the partitions file
+
+## Step 3 - Convert covariance matrix to vector
+
+Input:
+
+1. Covariance matrix from previous step
+
+Usage:
+
+python3 P01_matrix_to_vector_pipeline.py --dataset_path=<path_to_covariance_matrix_root> --name=<chromosome_name> --out_fname=<output_vector_fname>
+
+Example:
+
+python3 P01_matrix_to_vector_pipeline.py --dataset_path=example_data/cov_matrix/ --name=chr2 --out_fname=example_data/vector/vector-EUR-chr2-39967768-40067768.txt.gz
+
+Output:
+
+This will output the covariance matrix to vector-EUR-chr2-39967768-40067768.txt.gz. The columns are:
+
+[position] [diagonal_sum]
+
+## Step 4 - Calculate minima

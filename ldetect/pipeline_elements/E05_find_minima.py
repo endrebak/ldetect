@@ -68,6 +68,8 @@ def trackback(wrapper, srch_val, start_search, delta_coarse, step_coarse, step_f
 	while found_more: # whenever we find more, search continues looking as far as delta width from newly found location
 		found_more = False
 		for i in range(start_search+step_coarse, start_search+delta_coarse, step_coarse):
+			if i>=len(wrapper):
+				break
 			if wrapper[i] == srch_val:
 				found_more = True
 				start_search = i
@@ -84,6 +86,8 @@ def trackback(wrapper, srch_val, start_search, delta_coarse, step_coarse, step_f
 		while found_more: # whenever we find more, search continues looking as far as delta width from there
 			found_more = False
 			for i in range(start_search+step_fine, start_search+delta_fine, step_fine):
+				if i>=len(wrapper):
+					break
 				if wrapper[i] == srch_val:
 					found_more = True
 					start_search = i		
