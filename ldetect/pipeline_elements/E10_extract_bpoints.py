@@ -10,12 +10,13 @@ import commanderline.commander_line as cl
 import ldetect.baselib.flat_file_consts as cnst
 import ldetect.baselib.flat_file as flat
 
-def chr_bpoints_to_bed(name, dataset, subset, input_pickle_fname):
+def chr_bpoints_to_bed(name, dataset_path, subset, input_pickle_fname):
 	'''
 	subset is one of ['fourier', 'fourier_ls', 'uniform', 'uniform_ls']
 	'''
 	
-	input_config = cnst.const['orig_data_'+dataset]
+	# input_config = cnst.const['orig_data_'+dataset]
+	input_config = cnst.return_conf(dataset_path)
 
 	partitions = flat.read_partitions(name, input_config)
 

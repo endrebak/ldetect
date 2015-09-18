@@ -143,14 +143,15 @@ def multiple_pipelines(dataset, name, begin_list, end_list, img='no', orient='di
 
         run+=1
 
-def pipeline(dataset, name, begin=-1, end=-1, img='no', orient='diag', red='sum', snp=None, comment=''):
+def pipeline(dataset_path, name, begin=-1, end=-1, img='no', orient='diag', red='sum', snp=None, comment=''):
     '''
-    pipeline(dataset, name, begin=-1, end=-1, img='no', orient='diag', red='sum', snp=None, comment='')
+    pipeline(dataset_path, name, begin=-1, end=-1, img='no', orient='diag', red='sum', snp=None, comment='')
 
     snp1 and snp2 are loci of two SNPs that need to be converted into ordinal numbers representing row/col in image of matrix
     '''
 
-    analysis = matrix_to_vector.MatrixAnalysis(name, cnst.const[dataset], begin, end)
+    # analysis = matrix_to_vector.MatrixAnalysis(name, cnst.const[dataset], begin, end)
+    analysis = matrix_to_vector.MatrixAnalysis(name, cnst.return_conf(dataset_path), begin, end)
 
     print(analysis.snp_first)
     print(analysis.snp_last)
@@ -195,12 +196,13 @@ def pipeline(dataset, name, begin=-1, end=-1, img='no', orient='diag', red='sum'
 
     flat.print_log_msg('Done') 
 
-def pipeline_lean(dataset, name, begin=-1, end=-1, img='no', orient='diag', red='sum'):
+def pipeline_lean(dataset_path, name, begin=-1, end=-1, img='no', orient='diag', red='sum'):
     '''
-    pipeline_lean(dataset, name, begin=-1, end=-1, img='no', orient='diag', red='sum')
+    pipeline_lean(dataset_path, name, begin=-1, end=-1, img='no', orient='diag', red='sum')
     '''
     
-    analysis = matrix_to_vector.MatrixAnalysis(name, cnst.const[dataset], begin, end)
+    # analysis = matrix_to_vector.MatrixAnalysis(name, cnst.const[dataset], begin, end)
+    analysis = matrix_to_vector.MatrixAnalysis(name, cnst.return_conf(dataset_path), begin, end)
 
     print(analysis.snp_first)
     print(analysis.snp_last)

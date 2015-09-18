@@ -427,14 +427,15 @@ def main():
      
     breakpoints1 = [10148322, 15250019, 15864313, 16491839, 17748811, 18252127, 18912106, 19637870, 20332293, 20929869, 21190923, 21649595, 22318833, 23231365, 24271200, 24774771, 25035980, 26088085, 27431612, 27666047, 28290149, 28485200, 28761470, 29335757, 29790442, 30972911, 32778127, 33370496, 34413058, 35253882, 35614394, 36328018, 37283402, 38078491, 39227880, 39908770, 40259482, 40965403, 41448115, 41676786, 42689700, 43100808, 43345207, 43799567, 44748107, 45265729, 45789905, 46336509, 46883153, 47465743]   
     
-    metric = Metric('chr21', cnst.const['orig_data'], breakpoints1, begin, end)
+    # metric = Metric('chr21', cnst.const['orig_data'], breakpoints1, begin, end)
+    metric = Metric('chr21', cnst.return_conf('/nethome/jkpickrell/1kG_data/covariance_matrix/'), breakpoints1, begin, end)
     out = metric.calc_metric()
     print(out)
     print(out['sum']/out['N_zero'])
 
     breakpoints2 = [i for i in range(begin, end+1, int((end-begin)/(len(breakpoints1)-1)))]
     
-    metric = Metric('chr21', cnst.const['orig_data'], breakpoints2, begin, end)
+    metric = Metric('chr21', cnst.return_conf('/nethome/jkpickrell/1kG_data/covariance_matrix/'), breakpoints2, begin, end)
     out = metric.calc_metric()
     print(out)
     print(out['sum']/out['N_zero'])

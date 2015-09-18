@@ -101,8 +101,10 @@ import commanderline.commander_line as cl
 
 #     print('Done.')
 
-def pipeline(input_fname, chr_name, dataset, n_snps_bw_bpoints, begin=-1, end=-1, trackback_delta=200, trackback_step=20, init_search_location=1000):
-    begin, end = flat.first_last(chr_name, cnst.const[dataset], begin, end)
+def pipeline(input_fname, chr_name, dataset_path, n_snps_bw_bpoints, begin=-1, end=-1, trackback_delta=200, trackback_step=20, init_search_location=1000):
+    config=cnst.return_conf(dataset_path)
+    # begin, end = flat.first_last(chr_name, cnst.const[dataset], begin, end)
+    begin, end = flat.first_last(chr_name, config, begin, end)
     # READ DATA
     flat.print_log_msg('* Reading data')
     init_array, init_array_x = rd.read_data_raw(input_fname) 
@@ -131,7 +133,8 @@ def pipeline(input_fname, chr_name, dataset, n_snps_bw_bpoints, begin=-1, end=-1
     # METRIC
     flat.print_log_msg('* Calculating metric for non-uniform breakpoints (minima of filtered data)...')
         
-    metric_out = apply_metric(chr_name, begin, end, cnst.const[dataset], breakpoint_loci)
+    # metric_out = apply_metric(chr_name, begin, end, cnst.const[dataset], breakpoint_loci)
+    metric_out = apply_metric(chr_name, begin, end, config, breakpoint_loci)
     flat.print_log_msg('Global metric:')
     print_metric(metric_out)
     
@@ -142,31 +145,36 @@ def pipeline(input_fname, chr_name, dataset, n_snps_bw_bpoints, begin=-1, end=-1
     step = int(len(init_array_x)/(len(breakpoint_loci)+1))
     breakpoint_loci_uniform = [init_array_x[i] for i in range(step, len(init_array_x)-step+1, step)]
 
-    metric_out_uniform = apply_metric(chr_name, begin, end, cnst.const[dataset], breakpoint_loci_uniform)
+    # metric_out_uniform = apply_metric(chr_name, begin, end, cnst.const[dataset], breakpoint_loci_uniform)
+    metric_out_uniform = apply_metric(chr_name, begin, end, config, breakpoint_loci_uniform)
     flat.print_log_msg('Global metric:')
     print_metric(metric_out_uniform)
     
     # LOCAL SEARCH ON FOURIER - missing N runs
     flat.print_log_msg('* Running local search for fourier...')
 
-    breakpoint_loci_local_search = run_local_search_complete(chr_name, breakpoint_loci, begin, end, cnst.const[dataset], metric_out)
+    # breakpoint_loci_local_search = run_local_search_complete(chr_name, breakpoint_loci, begin, end, cnst.const[dataset], metric_out)
+    breakpoint_loci_local_search = run_local_search_complete(chr_name, breakpoint_loci, begin, end, config, metric_out)
     
     # RUN METRIC AGAIN W/ NEW BREAKPOINTS FROM FOURIER
     flat.print_log_msg('* Calculating metric for new fourier breakpoints...')
-        
-    metric_out_local_search = apply_metric(chr_name, begin, end, cnst.const[dataset], breakpoint_loci_local_search['loci'])
+    
+    # metric_out_local_search = apply_metric(chr_name, begin, end, cnst.const[dataset], breakpoint_loci_local_search['loci'])    
+    metric_out_local_search = apply_metric(chr_name, begin, end, config, breakpoint_loci_local_search['loci'])
     flat.print_log_msg('Global metric:')
     print_metric(metric_out_local_search)
     
     # LOCAL SEARCH ON UNIFORM - missing N runs
     flat.print_log_msg('* Running local search for uniform breakpoints...')
 
-    breakpoint_loci_uniform_local_search = run_local_search_complete(chr_name, breakpoint_loci_uniform, begin, end, cnst.const[dataset], metric_out_uniform)
+    # breakpoint_loci_uniform_local_search = run_local_search_complete(chr_name, breakpoint_loci_uniform, begin, end, cnst.const[dataset], metric_out_uniform)
+    breakpoint_loci_uniform_local_search = run_local_search_complete(chr_name, breakpoint_loci_uniform, begin, end, config, metric_out_uniform)
     
     # RUN METRIC AGAIN W/ NEW BREAKPOINTS FROM UNIFORM
     flat.print_log_msg('* Calculating metric for new uniform breakpoints...')
-        
-    metric_out_uniform_local_search = apply_metric(chr_name, begin, end, cnst.const[dataset], breakpoint_loci_uniform_local_search['loci'])
+    
+    # metric_out_uniform_local_search = apply_metric(chr_name, begin, end, cnst.const[dataset], breakpoint_loci_uniform_local_search['loci'])    
+    metric_out_uniform_local_search = apply_metric(chr_name, begin, end, config, breakpoint_loci_uniform_local_search['loci'])
     flat.print_log_msg('Global metric:')
     print_metric(metric_out_uniform_local_search)
     

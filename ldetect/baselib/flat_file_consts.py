@@ -1,11 +1,14 @@
 import copy
 
 tmp_path = '/nethome/jkpickrell/1kG_data/covariance_matrix/'
+# tmp_path_EUR = tmp_path
+# tmp_path_ASN = '/nethome/jkpickrell/1kG_data/covariance_matrix/ASN/'
+# tmp_path_AFR = '/nethome/jkpickrell/1kG_data/covariance_matrix/AFR/'
 
-const = {}
-const['orig_data'] = {
-		'partition_root' : tmp_path,
-		'partitions_dir' : tmp_path + 'scripts/',
+def return_conf(path):
+	return {
+		'partition_root' : path,
+		'partitions_dir' : path + 'scripts/',
 		'partitions_file_suffix' : '_partitions',
 		'partition_filename_delim' : '.',
 		'partition_filename_ext' : '.gz',
@@ -25,19 +28,22 @@ const['orig_data'] = {
 				'part_begin_col':0,
 				'part_end_col':1
 		}
-}
+	}
 
-const['orig_data_EUR'] = copy.deepcopy(const['orig_data'])
+const = {}
+# const['orig_data'] = return_const(tmp_path)
 
-tmp_path_ASN = '/nethome/jkpickrell/1kG_data/covariance_matrix/ASN/'
-const['orig_data_ASN'] = copy.deepcopy(const['orig_data'])
-const['orig_data_ASN']['partition_root'] =  tmp_path_ASN
-const['orig_data_ASN']['partitions_dir'] = tmp_path_ASN + 'scripts/'
+# const['orig_data_EUR'] = copy.deepcopy(const['orig_data'])
 
-tmp_path_AFR = '/nethome/jkpickrell/1kG_data/covariance_matrix/AFR/'
-const['orig_data_AFR'] = copy.deepcopy(const['orig_data'])
-const['orig_data_AFR']['partition_root'] =  tmp_path_AFR
-const['orig_data_AFR']['partitions_dir'] = tmp_path_AFR + 'scripts/' 
+# tmp_path_ASN = '/nethome/jkpickrell/1kG_data/covariance_matrix/ASN/'
+# const['orig_data_ASN'] = copy.deepcopy(const['orig_data'])
+# const['orig_data_ASN']['partition_root'] =  tmp_path_ASN
+# const['orig_data_ASN']['partitions_dir'] = tmp_path_ASN + 'scripts/'
+
+# tmp_path_AFR = '/nethome/jkpickrell/1kG_data/covariance_matrix/AFR/'
+# const['orig_data_AFR'] = copy.deepcopy(const['orig_data'])
+# const['orig_data_AFR']['partition_root'] =  tmp_path_AFR
+# const['orig_data_AFR']['partitions_dir'] = tmp_path_AFR + 'scripts/' 
 
 # const['part_buffer'] = 1
 const['bin_size'] = 1

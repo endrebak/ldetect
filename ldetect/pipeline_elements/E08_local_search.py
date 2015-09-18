@@ -612,7 +612,7 @@ def main():
 
     print('tmp_begin', tmp_begin, 'tmp_end', tmp_end)
 
-    local_search_run = LocalSearch('chr15', tmp_begin, tmp_end, breakpoint_index, breakpoints, total_sum, total_N, cnst.const['orig_data_EUR'])       
+    local_search_run = LocalSearch('chr15', tmp_begin, tmp_end, breakpoint_index, breakpoints, total_sum, total_N, cnst.return_conf('/nethome/jkpickrell/1kG_data/covariance_matrix/'))       
     
     new_breakpoint, new_metric = local_search_run.search()
     
