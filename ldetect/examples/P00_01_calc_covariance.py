@@ -1,17 +1,20 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
 import sys, os, gzip, math
 import numpy as np
 
 # calculate Wen/Stephens shrinkage LD estimate
 gmapfile = gzip.open(sys.argv[1]) # genetic map 
-outfile = gzip.open(sys.argv[2], "w") # outfile file
-indfile = open(sys.argv[3]) #list of individuals
-NE = 11418.0
-CUTOFF = 1e-7
+indfile = open(sys.argv[2]) #list of individuals
+# NE = 11418.0
+NE = float(sys.argv[3])
+# CUTOFF = 1e-7
+CUTOFF = float(sys.argv[4])
+outfile = gzip.open(sys.argv[5], "w") # outfile file
 
 inds = list()
-for line in indfile.xreadlines():
+# for line in indfile.xreadlines():
+for line in indfile:
         line = line.strip().split()
         inds.append(line[0])
 
@@ -20,13 +23,13 @@ theta = 0
 nind = len(inds)
 s = 0
 for i in range(1, 2*nind):
-        print i
+        print(i)
         s = s+ 1.0/float(i)
 
 s = 1/s
 #print "s", s
 theta = s/(2.0*float(nind)+s)
-print theta
+print(theta)
 
 pos2gpos = dict()
 line = gmapfile.readline()
@@ -104,5 +107,6 @@ for i in range(len(allpos)):
                         continue
                 if i == j:
                         Ds2 = Ds2 + (theta/2.0)*(1-theta/2.0)
-                print >> outfile, allrs[i], allrs[j], pos1, pos2, gpos1, gpos2, D, Ds2
+                # print >> outfile, allrs[i], allrs[j], pos1, pos2, gpos1, gpos2, D, Ds2
+                print(str(allrs[i])+' '+str(allrs[j])+' '+str(pos1)+' '+str(pos2)+' '+str(gpos1)+' '+str(gpos2)+' '+str(D)+' '+str(Ds2), file=outfile)
                 j = j+1
