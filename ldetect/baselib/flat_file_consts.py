@@ -60,10 +60,10 @@ const['img_out_ext'] = '.png'
 const['synth_input_root'] = '/data/research/pickrell_lab/genome_data/LD_covariance_matrix/ld_data/raw_synth_data/'
 const['synth_input_filename_single'] = 'chrTest/ms_output.txt'
 
-
-const['synth_data'] = copy.deepcopy(const['orig_data'])
-const['synth_data']['partition_root'] = '/data/research/pickrell_lab/genome_data/LD_covariance_matrix/ld_data/covariance_matrix/'
-const['synth_data']['partitions_dir'] = const['synth_data']['partition_root'] + 'scripts/'
+# const['synth_data'] = copy.deepcopy(const['orig_data'])
+# const['synth_data']['partition_root'] = '/data/research/pickrell_lab/genome_data/LD_covariance_matrix/ld_data/covariance_matrix/'
+# const['synth_data']['partitions_dir'] = const['synth_data']['partition_root'] + 'scripts/'
+const['synth_data'] = return_conf('/data/research/pickrell_lab/genome_data/LD_covariance_matrix/ld_data/covariance_matrix/')
 
 tmp_path_maps = '/nethome/jkpickrell/Databases/human_genome/hg19/genetic_map/HapMap2_lifted/'
 
