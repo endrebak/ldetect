@@ -31,7 +31,7 @@ rule download_genetic_maps:
 
 rule untar_genetic_maps:
     input:
-        "{prefix}/genetic_maps/{population}.tar"
+        rules.download_genetic_maps.output # "{prefix}/genetic_maps/{population}.tar"
     output:
         expand("{{prefix}}/genetic_maps/{{population}}/{chromosome}.txt.gz", chromosome=chromosomes)
     run:
@@ -49,7 +49,7 @@ rule untar_genetic_maps:
 
 rule genetic_maps_to_bed:
     input:
-        "{prefix}/genetic_maps/{population}/{chromosome}.txt.gz"
+        rules.untar_genetic_maps.output # "{prefix}/genetic_maps/{population}/{chromosome}.txt.gz"
     output:
         "{prefix}/genetic_maps/{population}/{chromosome}_hg19.bed"
     run:
@@ -70,10 +70,10 @@ rule fetchchain:
         "curl http://hgdownload.soe.ucsc.edu/goldenPath/hg19/liftOver/hg19ToHg38.over.chain.gz > {output[0]}"
 
 
-rule hg19_to_38:
+rule hg19_to_hg38:
     input:
-        chain = "{prefix}/chain/hg19_to_hg38.chain.gz",
-        bed = "{prefix}/genetic_maps/{population}/{chromosome}_hg19.bed"
+        chain = rules.fetchchain.output, # "{prefix}/chain/hg19_to_hg38.chain.gz",
+        bed = rules.genetic_maps_to_bed.output # "{prefix}/genetic_maps/{population}/{chromosome}_hg19.bed"
     output:
         bed = "{prefix}/genetic_maps/{population}/{chromosome}_hg38.bed",
         unmapped = "{prefix}/genetic_maps/{population}/{chromosome}.unmapped"
@@ -99,7 +99,8 @@ rule fetch_variants_index:
 
 rule vcf_to_bed:
     input:
-        "{prefix}/1kg/{chromosome}.vcf.gz"
+        # "{prefix}/1kg/{chromosome}.vcf.gz"
+        rules.fetch_variants.output
     output:
         "{prefix}/1kg/{chromosome}.bed"
     run:
@@ -119,3 +120,9 @@ rule vcf_to_bed:
 
 rule interpolate_genetic_maps:
     input:
+        bed = rules.vcf_to_bed.output,
+        mapfile = rules.hg19_to_hg38.output.bed
+    output:
+        "{prefix}/genetic_maps/{population}/interpolated_{chromosome}_hg38.bed"
+    script:
+        "../scripts/interpolate_maps.py"

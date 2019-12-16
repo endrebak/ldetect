@@ -28,21 +28,15 @@ rule liftover_recombination_maps:
         "{prefix}/download/{chromosome}.gz"
 
 
-
-
-# rule compute_genetic_maps:
-#     input:
-
-
-
-
-
-# rule partition_chromosomes:
-#     input:
-#         config["genetic_map"]
-#     output:
-#         "{prefix}/partitions/{chromosome}.gz"
-#     script:
-#         "scripts/partition_chromosome.py"
+rule partition_chromosomes:
+    input:
+        genetic_map = config["genetic_map"],
+        number_individuals_in_reference_panel = ""
+    output:
+        "{prefix}/partitions/{chromosome}.gz"
+    # params:
+        
+    script:
+        "scripts/partition_chromosome.py"
 
 
