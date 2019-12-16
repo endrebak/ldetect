@@ -7,3 +7,11 @@ sample_sheet: "example/sample_sheet.tsv"
 genetic_map: "ldetect/examples/example_data/chr2.interpolated_genetic_map.gz"
 
 number_individuals_in_reference_panel: 379
+
+population:
+  EUR:
+    - CEU
+    - FIN
+    - GBR
+    - IBS
+    - TSI

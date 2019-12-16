@@ -1,36 +1,25 @@
 #!/usr/bin/env python3
 
-import sys, os, gzip, math
+import sys, math
+import pandas as pd
 
-try:
-    infile = gzip.open(snakemake.input[0])
-    nind = float(snakemake.config["number_individuals_in_reference_panel"])
-    outfile = open(snakemake.output[0], "w")
-except:
-    infile = gzip.open(sys.argv[1])
-    nind = float(sys.argv[2])
-    outfile = open(sys.argv[3], "w")
+# try:
+infile = snakemake.input["genetic_map"]
+nind = int(open(snakemake.input["number_individuals"]).readline().strip())
+outfile = snakemake.output[0]
 
 N = 5000
 
-pos2gpos = dict()
-poss = list()
-line = infile.readline()
-while line:
-    line = line.strip().split()
-    pos = int(line[1])
-    gpos = float(line[2])
-    pos2gpos[pos] = gpos
-    poss.append(pos)
-    line = infile.readline()
+indf = pd.read_table(infile, sep=" ", header=None)
+poss = indf[1].tolist()
+pos2gpos = {p: g for p, g in zip(poss, indf[2].tolist())}
 
-print(len(poss))
 nsnp = len(poss)
 
 chunk = float(nsnp)/float(N)
-print(chunk)
 chunk = int(math.floor(chunk))
-print(chunk)
+
+results = []
 
 for i in range(chunk):
     start = i*N
@@ -39,8 +28,7 @@ for i in range(chunk):
         end = len(poss)-1
         startpos = poss[start]
         endpos = poss[end]
-        # print >> outfile, startpos, endpos
-        print(str(startpos)+' '+str(endpos), file=outfile)
+        results.append((startpos, endpos))
         continue
     startpos = poss[start]
     endpos = poss[end-1]
@@ -60,9 +48,8 @@ for i in range(chunk):
             stop = True
         else:
             test = test+1
-    # print >> outfile, startpos, testpos
-    print(str(startpos)+' '+str(testpos), file=outfile)
 
+    results.append((startpos, testpos))
 
-outfile.close()
-infile.close()
+df = pd.DataFrame.from_records(results)
+df.to_csv(outfile, sep=" ", index=False, header=False)

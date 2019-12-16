@@ -1,25 +1,7 @@
 from glob import glob
 import pandas as pd
 
-chromosomes = ["chr" + str(i) for i in range(1, 23)]
-
-prefix = config["prefix"]
-
-f = "{prefix}/genetic_maps/{population}/{chromosome}.bed"
-f = "{prefix}/genetic_maps/{population}/{chromosome}_hg38.bed"
-f = "{prefix}/1kg/{chromosome}.vcf.gz.tbi"
-f = "{prefix}/1kg/{chromosome}.vcf.gz"
-f = "{prefix}/genetic_maps/{population}/{chromosome}_hg38.bed"
-
 variant_url = "http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000_genomes_project/release/20190312_biallelic_SNV_and_INDEL/ALL.{chromosome}.shapeit2_integrated_snvindels_v2a_27022019.GRCh38.phased.vcf.gz"
-
-f = "{prefix}/1kg/{chromosome}.vcf.gz.tbi"
-f = "{prefix}/1kg/{chromosome}.vcf.gz"
-# f = "{prefix}/genetic_maps/{population}/{chromosome}.txt.gz"
-
-rule all:
-    input:
-        expand(f, chromosome=chromosomes, prefix=prefix, population="CEU")
 
 
 rule download_genetic_maps:
@@ -99,7 +81,6 @@ rule fetch_variants_index:
 
 rule vcf_to_bed:
     input:
-        # "{prefix}/1kg/{chromosome}.vcf.gz"
         rules.fetch_variants.output
     output:
         "{prefix}/1kg/{chromosome}.bed"

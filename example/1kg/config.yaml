@@ -5,6 +5,18 @@ genome: "hg38"
 
 sample_sheet: "example/sample_sheet.tsv"
 
-genetic_map: "ldetect/examples/example_data/chr2.interpolated_genetic_map.gz"
+sample_info: "data/sample_info.tsv"
 
-number_individuals_in_reference_panel: 379
+effective_population_sizes: "data/estimated_effective_population_sizes.txt"
+
+# genetic_map: "ldetect/examples/example_data/chr2.interpolated_genetic_map.gz"
+
+# number_individuals_in_reference_panel: 379
+
+population:
+  EUR:
+    - CEU
+    - FIN
+    - GBR
+    - IBS
+    - TSI
