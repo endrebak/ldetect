@@ -3,7 +3,6 @@
 import sys, math
 import pandas as pd
 
-# try:
 infile = snakemake.input["genetic_map"]
 nind = int(open(snakemake.input["number_individuals"]).readline().strip())
 outfile = snakemake.output[0]
@@ -11,8 +10,9 @@ outfile = snakemake.output[0]
 N = 5000
 
 indf = pd.read_table(infile, sep=" ", header=None)
-poss = indf[1].tolist()
-pos2gpos = {p: g for p, g in zip(poss, indf[2].tolist())}
+# print(indf)
+poss = indf[0].tolist()
+pos2gpos = {p: g for p, g in zip(poss, indf[1].tolist())}
 
 nsnp = len(poss)
 

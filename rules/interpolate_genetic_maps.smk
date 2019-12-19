@@ -1,14 +1,19 @@
 from glob import glob
 import pandas as pd
 
-variant_url = "http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000_genomes_project/release/20190312_biallelic_SNV_and_INDEL/ALL.{chromosome}.shapeit2_integrated_snvindels_v2a_27022019.GRCh38.phased.vcf.gz"
+# variant_url = "http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000_genomes_project/release/20190312_biallelic_SNV_and_INDEL/ALL.{chromosome}.shapeit2_integrated_snvindels_v2a_27022019.GRCh38.phased.vcf.gz"
+variant_url = "http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/ALL.{chromosome}.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.vcf.gz"
 
 
 rule download_genetic_maps:
     output:
         "{prefix}/genetic_maps/{population}.tar"
     shell:
-        "curl ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/technical/working/20130507_omni_recombination_rates/{wildcards.population}_omni_recombination_20130507.tar > {output[0]}"
+        (
+        "axel -q "
+        "http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/technical/working/20130507_omni_recombination_rates/{wildcards.population}_omni_recombination_20130507.tar "
+        "-o {output[0]}"
+        )
 
 
 rule untar_genetic_maps:
@@ -31,7 +36,7 @@ rule untar_genetic_maps:
 
 rule genetic_maps_to_bed:
     input:
-        rules.untar_genetic_maps.output # "{prefix}/genetic_maps/{population}/{chromosome}.txt.gz"
+        "{prefix}/genetic_maps/{population}/{chromosome}.txt.gz"
     output:
         "{prefix}/genetic_maps/{population}/{chromosome}_hg19.bed"
     run:
@@ -39,7 +44,7 @@ rule genetic_maps_to_bed:
         df.columns = "Start Name Score".split()
 
         df.insert(1, "End", df.Start + 1)
-        df.insert(0, "Chromosome", "chr" + wildcards.chromosome)
+        df.insert(0, "Chromosome", wildcards.chromosome)
         df.insert(5, "Strand", ".")
 
         df.to_csv(output[0], sep="\t", index=False, header=False)
@@ -52,7 +57,7 @@ rule fetchchain:
         "curl http://hgdownload.soe.ucsc.edu/goldenPath/hg19/liftOver/hg19ToHg38.over.chain.gz > {output[0]}"
 
 
-rule hg19_to_hg38:
+rule genetic_maps_hg19_to_hg38:
     input:
         chain = rules.fetchchain.output, # "{prefix}/chain/hg19_to_hg38.chain.gz",
         bed = rules.genetic_maps_to_bed.output # "{prefix}/genetic_maps/{population}/{chromosome}_hg19.bed"
@@ -66,9 +71,12 @@ rule hg19_to_hg38:
 rule fetch_variants:
     output:
         "{prefix}/1kg/{chromosome}.vcf.gz"
+    resources:
+        instances = 1
     run:
         url = variant_url.format(chromosome=wildcards.chromosome)
-        shell("curl {url} > {output[0]}")
+        shell("axel {url} -q -o {output[0]}")
+
 
 
 rule fetch_variants_index:
@@ -85,24 +93,31 @@ rule vcf_to_bed:
     output:
         "{prefix}/1kg/{chromosome}.bed"
     run:
-        tmpfile = f"{wildcards.chromosome}.deleteme"
+        import gzip
 
-        shell("zcat {input[0]} | cut -f -2 > {tmpfile}")
+        rows_to_skip = 0
 
-        df = pd.read_table(tmpfile)
+        with gzip.open(input[0]) as fh:
+            for i, l in enumerate(fh, 0):
+                rows_to_skip = i
+                if not l.decode().startswith("#"):
+                    break
+
+        print("rows_to_skip", rows_to_skip)
+
+        df = pd.read_table(input[0], header=None, skiprows=rows_to_skip, usecols=[0, 1], nrows=None)
+        print(df.head())
         df.columns = "Chromosome Start".split()
         df.insert(df.shape[1], "End", df.Start + 1)
-        df.loc[:, "Chromosome"] = "chr" + df.Chromosome
+        df.loc[:, "Chromosome"] = "chr" + df.Chromosome.astype(str)
 
-        shell("rm {tmpfile}")
-
-        df.to_csv(output[0], sep="\t")
+        df.to_csv(output[0], sep="\t", index=False, header=False)
 
 
 rule interpolate_genetic_maps:
     input:
-        bed = rules.vcf_to_bed.output,
-        mapfile = rules.hg19_to_hg38.output.bed
+        bed = rules.vcf_to_bed.output[0],
+        mapfile = rules.genetic_maps_hg19_to_hg38.output.bed
     output:
         "{prefix}/genetic_maps/{population}/interpolated_{chromosome}_hg38.bed"
     script:

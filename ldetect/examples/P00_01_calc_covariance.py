@@ -23,7 +23,7 @@ theta = 0
 nind = len(inds)
 s = 0
 for i in range(1, 2*nind):
-        print(i)
+        # print(i)
         s = s+ 1.0/float(i)
 
 s = 1/s

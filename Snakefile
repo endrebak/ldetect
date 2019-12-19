@@ -1,6 +1,5 @@
 import pandas as pd
 
-# print(config["population"])
 
 def pop_as_list():
     pop = config["population"]
@@ -9,7 +8,12 @@ def pop_as_list():
     elif isinstance(pop, list):
         return pop
     else:
-        return list(pop.items())
+        values = []
+        for v in list(pop.values())[0]:
+            values.append(v)
+
+        return values
+
 
 sample_sheet_path = config["sample_sheet"]
 prefix = config["prefix"]
@@ -23,22 +27,22 @@ def get_number_of_individuals_in_reference_panel(w):
 
     return len(si[si.Population == w.population])
 
+
 chromosomes = ["chr" + str(i) for i in range(1, 23)]
+chromosomes = ["chr22"]
 prefix = config["prefix"]
-populations = si.Population.drop_duplicates().tolist()
+populations = pop_as_list()
+# populations = pd.read_table(config["recombination_rates"], header=None, squeeze=True).to_list()
 
 regex = lambda l: "|".join([str(w) for w in l])
 
-# print(chromosomes)
-# print(populations)
+
 wildcard_constraints:
     chromosome = regex(chromosomes),
     prefix = prefix
 
 
-
-
-for rule in ["interpolate_genetic_maps", "partition_chromosomes"]:
+for rule in ["interpolate_genetic_maps", "partition_chromosomes", "calculate_covariance_matrix"]:
     include: "rules/" + rule + ".smk"
 
 
@@ -57,20 +61,17 @@ def aexpand(f):
 
     keys_found_with_s.update(keys_found)
     keys_found = keys_found_with_s
-    
+
     k_v = {k: _globals[keys_found[k]] for k in keys_found}
 
     return expand(f, **k_v)
 
-
-
-
-
 rule all:
     input:
-        # expand("{prefix}/partitions/{chromosome}.gz", prefix=prefix, chromosome=ss.Chromosome),
-        aexpand(rules.partition_chromosomes.output)
-        # expand(rules.interpolate_genetic_maps.output, chromosome=chromosomes, prefix=prefix, population="CEU")
+        # aexpand(rules.partition_chromosomes.output)
+        # aexpand(checkpoints.covariance_matrix.output)
+        aexpand("{prefix}/partition_covariances/{population}/{chromosome}/")
+        # aexpand(rules.fetch_variants.output)
 
 # rule download_chromosomes_vcf:
 #     output:
