@@ -34,7 +34,7 @@ rule individuals_in_reference_panel:
         pop.Sample.to_frame().to_csv(output["samples"], index=False, sep="\t", header=False)
 
 
-rule partition_chromosomes:
+checkpoint partition_chromosomes:
     input:
         genetic_map = rules.interpolate_genetic_maps.output[0],
         number_individuals = rules.individuals_in_reference_panel.output.n_ind

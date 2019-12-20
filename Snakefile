@@ -70,7 +70,8 @@ rule all:
     input:
         # aexpand(rules.partition_chromosomes.output)
         # aexpand(checkpoints.covariance_matrix.output)
-        aexpand("{prefix}/partition_covariances/{population}/{chromosome}/")
+        # aexpand("{prefix}/partition_covariances/{population}/{chromosome}/")
+        aexpand("{prefix}/collected_covariances/{population}/{chromosome}.gz")
         # aexpand(rules.fetch_variants.output)
 
 # rule download_chromosomes_vcf:

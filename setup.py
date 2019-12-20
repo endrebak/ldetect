@@ -1,5 +1,7 @@
 import sys
 from distutils.core import setup
+from setuptools import find_packages, Extension, Command
+
 
 if sys.version_info<(3,):
 	raise Exception('Sorry, only Python v3 and higher are supported')

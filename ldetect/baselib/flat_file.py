@@ -28,9 +28,10 @@ def read_partitions(name, input_config):
 	partitions = []
 	with open(input_config['partitions_dir']+name+input_config['partitions_file_suffix']) as f_part:
 		csv_reader = csv.reader(f_part, delimiter=input_config['partitions_delim'])
+		print("f_part", f_part)
 		for row in csv_reader:
 			partitions.append((int(row[input_config['partitions_file_format']['part_begin_col']]), int(row[input_config['partitions_file_format']['part_end_col']])))
-
+            
 	return partitions
 
 def relevant_subpartitions(partitions, snp_first, snp_last):
@@ -131,26 +132,26 @@ def insert_into_matrix(row, matrix, locus_list, partition_file_format, symmetric
 			matrix[r]['data'][l]['shrink'] = shrink
 
 def insert_into_matrix_lean(row, matrix, locus_list, partition_file_format, symmetric):
-	loc_i = int(row[partition_file_format['i_col']])
-	loc_j = int(row[partition_file_format['j_col']])
+	loc_i = int(row[2])
+	loc_j = int(row[3])
 
 	if min((loc_i, loc_j)) == loc_i: 
 		l = loc_i
 		r = loc_j
-		l_id = row[partition_file_format['i_id_col']] if partition_file_format['i_id_col'] >=0 else 'None'
-		r_id = row[partition_file_format['j_id_col']] if partition_file_format['j_id_col'] >=0 else 'None'
-		l_g = float(row[partition_file_format['g_i_col']])
-		r_g = float(row[partition_file_format['g_j_col']])
+		l_id = row[0] # if [0] >=0 else 'None'
+		r_id = row[1] # if [1] >=0 else 'None'
+		l_g = float(row[4])
+		r_g = float(row[5])
 	else:
 		r = loc_i
 		l = loc_j
-		r_id = row[partition_file_format['i_id_col']] if partition_file_format['i_id_col'] >=0 else 'None'
-		l_id = row[partition_file_format['j_id_col']] if partition_file_format['j_id_col'] >=0 else 'None'
-		r_g = float(row[partition_file_format['g_i_col']])
-		l_g = float(row[partition_file_format['g_j_col']])						
+		r_id = row[0] # if [0] >=0 else 'None'
+		l_id = row[1] # if [1] >=0 else 'None'
+		r_g = float(row[4])
+		l_g = float(row[5])						
 
-	naive = float(row[partition_file_format['naive_val_col']])
-	shrink = float(row[partition_file_format['shrink_val_col']])
+	naive = float(row[6])
+	shrink = float(row[7])
 
 	if l not in matrix:
 		matrix[l] = {}
@@ -184,10 +185,15 @@ def read_partition_into_matrix_lean(partitions, p_index, matrix, locus_list, nam
 					+name+input_config['partition_filename_delim']
 					+str(partitions[p_index][0])+input_config['partition_filename_delim']
 					+str(partitions[p_index][1])+input_config['partition_filename_ext'], 'rt') as f_in:
+		print("infile", f_in)
+		print("matrix", matrix)
 		csv_reader = csv.reader(f_in, delimiter=input_config['partition_delim'])
 		try:
 			for row in csv_reader:
+					# print("matrix")
+					# print(len(matrix))
 					insert_into_matrix_lean(row, matrix, locus_list, input_config['partition_file_format'], symmetric)
+					# print(len(matrix))
 
 		except EOFError as e:
 			print_log_msg('Error: '+str(e)+' at: '+str(partitions[p_index][0])+' '+str(partitions[p_index][1]))

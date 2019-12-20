@@ -295,11 +295,6 @@ class MatrixAnalysis:
 		self.calculation_complete = True
 
 	def calc_diag_lean(self, out_fname, out_delim, dynamic_delete=True): 
-		# flat.print_log_msg('Removing existing matrix output file')
-		# try:
-		#     os.remove(cnst.const['out_matrix_delim'])
-		# except OSError:
-		#     pass
 
 		if dynamic_delete == False:
 			raise Exception('Error: Conversion has been run in lean mode, but with dynamically=False.')
@@ -319,7 +314,6 @@ class MatrixAnalysis:
 				break
 
 		curr_locus = -1
-		# for p_num, p in enumerate(self.partitions):
 		for p_num in range(last_p_num+1, len(self.partitions)):
 			p = self.partitions[p_num]
 
@@ -340,12 +334,6 @@ class MatrixAnalysis:
 							break
 				else:
 					raise Exception('Error: locus_list seems to be empty') 
-			# else:
-			# 	if len(self.locus_list)>0:
-			# 		curr_locus = self.locus_list[0]
-			# 		curr_locus_index = 0
-			# 	else:
-			# 		raise Exception('Error: locus_list seems to be empty')
 			else:
 				try:
 					curr_locus_index = self.locus_list.index(curr_locus)
@@ -365,14 +353,11 @@ class MatrixAnalysis:
 				flat.print_log_msg('snp_first: '+repr(self.snp_first))
 				flat.print_log_msg('curr_locus: '+repr(curr_locus)) 
 				continue #continue to next partition 
-				# raise Exception('Error: curr_locus not found!')	
 
 			# Determine end locus
 			if p_num+1 < len(self.partitions):
 				end_locus = int((self.partitions[p_num][1] + self.partitions[p_num+1][0]) / 2) # diag - specific
 			else:
-				# end_locus = self.partitions[p_num][1]
-
 				# Find last locus <= snp_last
 				end_locus_found = False
 				for i in reversed(range(0, len(self.locus_list))):
@@ -399,10 +384,6 @@ class MatrixAnalysis:
 						corr_coeff = self.matrix[x][y] / math.sqrt( self.matrix[x][x] * self.matrix[y][y] )
 						self.add_corr_coeff(corr_coeff, curr_locus)
 						# Just save it in the matrix ;) - removed for chrom11
-						# self.matrix[x]['data'][y]['corr_coeff'] = corr_coeff
-					# else:
-					# 	flat.print_log_msg('Condition not satisfied 1!')
-					# 	flat.print_log_msg('x: '+repr(x)+' y: '+repr(y))
 
 					if delta!=0:
 						x = self.locus_list[curr_locus_index-delta+1]
@@ -410,10 +391,6 @@ class MatrixAnalysis:
 							corr_coeff = self.matrix[x][y] / math.sqrt( self.matrix[x][x] * self.matrix[y][y] )
 							self.add_corr_coeff(corr_coeff, curr_locus)
 							# Just save it in the matrix ;) - removed for chrom11
-							# self.matrix[x]['data'][y]['corr_coeff'] = corr_coeff
-						# else:
-						# 	flat.print_log_msg('Condition not satisfied 2!')
-						# 	flat.print_log_msg('x: '+repr(x)+' y: '+repr(y))
 
 					delta += 1
 					if curr_locus_index-delta >= 0:
@@ -426,7 +403,7 @@ class MatrixAnalysis:
 						y = self.locus_list[curr_locus_index+delta]
 					else:
 						# flat.print_log_msg('Y index out of bounds')
-						break						
+						break
 
 				if curr_locus_index+1 < len(self.locus_list):
 					curr_locus_index+=1
@@ -435,8 +412,6 @@ class MatrixAnalysis:
 					flat.print_log_msg('curr_locus_index out of bounds')
 					break
 
-			# flat.print_log_msg('Mem before delete: '+repr(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss))
-			# flat.delete_loci_smaller_than_and_output_matrix_to_file(end_locus, self.matrix, locus_list, locus_list_deleted, cnst.const['out_matrix_filename'])
 			if self.dynamic_delete:
 				flat.print_log_msg('Deleting loci not required any more')
 				if p_num+1 < len(self.partitions):
@@ -448,7 +423,6 @@ class MatrixAnalysis:
 			else:
 				flat.print_log_msg('locus_list size: '+repr(len(self.locus_list)))
 
-			# flat.print_log_msg('Mem after delete:  '+repr(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss))
 
 		self.start_locus = start_locus
 		self.start_locus_index = start_locus_index

@@ -28,8 +28,10 @@ class MatrixAnalysis:
 		self.input_config = input_config
 
 		self.snp_first, self.snp_last = flat.first_last(name, input_config, snp_first, snp_last)
+		print("fl", self.snp_first, self.snp_last) # = flat.get_final_partitions(self.input_config, self.name, self.snp_first, self.snp_last)
 
 		self.partitions = flat.get_final_partitions(self.input_config, self.name, self.snp_first, self.snp_last)
+		print("partitions", self.partitions) # = flat.get_final_partitions(self.input_config, self.name, self.snp_first, self.snp_last)
 		self.dynamic_delete = False
 		self.calculation_complete = False
 		self.start_locus = -1
@@ -370,6 +372,7 @@ class MatrixAnalysis:
 			# Determine end locus
 			if p_num+1 < len(self.partitions):
 				end_locus = int((self.partitions[p_num][1] + self.partitions[p_num+1][0]) / 2) # diag - specific
+				print("1 end locus", end_locus, p_num)
 			else:
 				# end_locus = self.partitions[p_num][1]
 
@@ -383,6 +386,8 @@ class MatrixAnalysis:
 						end_locus_found = True
 						break
 
+				print("2 end locus", end_locus, p_num)
+
 				if not end_locus_found:
 					end_locus_index = 0
 					end_locus = self.locus_list[end_locus_index]
@@ -390,14 +395,30 @@ class MatrixAnalysis:
 			flat.print_log_msg('Running for partition: '+str(p))
 			# This will not include the very last SNP of the complete range, but that shouldn't be too important since the end of the range shouldn't be a defining location for LD
 			while curr_locus <= end_locus: 
+				print("-----" * 5)
+				print("curr_locus", curr_locus)
+				total_iterations = 0
+				total_additions = 0
 				x = self.locus_list[curr_locus_index]
 				y = self.locus_list[curr_locus_index]
+				print("x_idx", curr_locus_index)
+				print("y_idx", curr_locus_index)
+				print("x", x)
+				print("y", y)
 				delta = 0
 
 				while x >= self.partitions[p_num][0] and y <= self.partitions[p_num][1]:
+					print("  x", x)
+					print("  y", y)
+					# print("  delta", delta)
+					# when would x not be in matrix or y not be in matrix[x]?
 					if x in self.matrix and y in self.matrix[x]:
+						# print("computing corr coeff for", x, y)
 						corr_coeff = self.matrix[x][y] / math.sqrt( self.matrix[x][x] * self.matrix[y][y] )
 						self.add_corr_coeff(corr_coeff, curr_locus)
+
+						print("  self.vert_sum[curr_locus]", self.vert_sum[curr_locus])
+						total_additions += 1
 						# Just save it in the matrix ;) - removed for chrom11
 						# self.matrix[x]['data'][y]['corr_coeff'] = corr_coeff
 					# else:
@@ -407,8 +428,12 @@ class MatrixAnalysis:
 					if delta!=0:
 						x = self.locus_list[curr_locus_index-delta+1]
 						if x in self.matrix and y in self.matrix[x]:
+							# print("computing corr coeff for", x, y)
 							corr_coeff = self.matrix[x][y] / math.sqrt( self.matrix[x][x] * self.matrix[y][y] )
 							self.add_corr_coeff(corr_coeff, curr_locus)
+							print("  self.vert_sum[curr_locus]", self.vert_sum[curr_locus])
+
+							total_additions += 1
 							# Just save it in the matrix ;) - removed for chrom11
 							# self.matrix[x]['data'][y]['corr_coeff'] = corr_coeff
 						# else:
@@ -417,16 +442,23 @@ class MatrixAnalysis:
 
 					delta += 1
 					if curr_locus_index-delta >= 0:
+						print("x_idx", curr_locus_index - delta)
 						x = self.locus_list[curr_locus_index-delta]
 					else:
 						# flat.print_log_msg('X index out of bounds')
+						flat.print_log_msg('X index out of bounds')
 						break
 
 					if curr_locus_index+delta < len(self.locus_list):
+						print("y_idx", curr_locus_index + delta)
 						y = self.locus_list[curr_locus_index+delta]
 					else:
-						# flat.print_log_msg('Y index out of bounds')
+						flat.print_log_msg('Y index out of bounds')
 						break						
+
+					total_iterations += 1
+				print("total_iterations", total_iterations)
+				print("total_additions", total_additions)
 
 				if curr_locus_index+1 < len(self.locus_list):
 					curr_locus_index+=1
