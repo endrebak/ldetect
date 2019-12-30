@@ -45,11 +45,12 @@ rule covariance_matrix:
     output:
         "{prefix}/partition_covariances/{population}/{chromosome}/{start}_{end}.tsv.gz"
     run:
-        df = pd.read_table(input.intervals, header=None, usecols=[0, 1], sep=" ", nrows=None)
+        # df = pd.read_table(input.intervals, header=None, usecols=[0, 1], sep=" ", nrows=None)
         # df = df.tail(int(len(df)/2)).tail(1)
         # df = df.head(3).tail(1)
         # print(df)
         w = wildcards
+
 
         effective_population_size = -1
         with open(input.effective_population_size) as eps:
@@ -69,7 +70,9 @@ rule covariance_matrix:
         # outfile_template = output[0] + "/" + "{start}_{end}.txt.gz"
 
         template = f"""tabix {input.variants} {c}:{start}-{end} | cut -f 2,3,10- | tr "|" "\\t" |
-python scripts/calc_covar.py {input.genetic_maps} {input.individuals_to_use} {effective_population_size} {covariance_cutoff} {output[0]}"""
+python scripts/calc_covar.py {input.genetic_maps} {input.individuals_to_use} {effective_population_size} {covariance_cutoff} | gzip > {output[0]}"""
+        # print(template)
+        shell(template)
 
         # from time import time
         # for i, (_, (start, end)) in enumerate(df.iterrows()):
@@ -85,7 +88,9 @@ python scripts/calc_covar.py {input.genetic_maps} {input.individuals_to_use} {ef
 def get_intervals(w):
 
     intervals = checkpoints.partition_chromosomes.get(**w).output[0]
+    # print(intervals)
     df = pd.read_csv(intervals, header=None, sep=" ")
+    df = df.head(1)
     # print(df)
     starts = df[0].tolist()
     ends = df[1].tolist()
@@ -94,7 +99,30 @@ def get_intervals(w):
     cs = [w.chromosome] * len(df)
     prefixes = [w.prefix] * len(df)
     fs = expand(f, zip, prefix=prefixes, population=pops, chromosome=cs, start=starts, end=ends)
+    # print(fs)
     return fs
+
+rule calculate_theta2:
+    input:
+        rules.individuals_in_reference_panel.output.samples
+    output:
+        "{prefix}/thetas2/{population}/{chromosome}.txt"
+    run:
+        inds = pd.read_table(input[0], header=None, squeeze=True).to_list()
+
+        nind_int = len(inds)
+        s = 0
+
+        for _i in range(1, 2*nind_int):
+            s = s+ 1.0/float(_i)
+
+        s = 1/s
+
+        theta = s/(2.0*float(nind_int)+s)
+        thetas2 = (theta/2.0)*(1-theta/2.0)
+
+        with open(output[0], "w+") as o:
+            o.write(str(thetas2) + "\n")
 
 rule collect_covariances:
     input:
@@ -112,14 +140,21 @@ rule collect_covariances:
 
 #     return checkpoint_output
 
+# def theta2(f):
+#     val = open(f).readline().strip()
+#     print("theta2", val)
+#     return double(val)
 
 rule matrix_to_vector:
     input:
-        get_intervals
+        covariances = get_intervals,
+        partitions = "{prefix}/partitions/{population}/{chromosome}.gz",
+        theta2 = rules.calculate_theta2.output[0]
+        # checkpoints.partition_chromosomes.output
     output:
-        "{prefix}/partitions/covariance/{chromosome}.gz"
-    run:
-        "../scripts/calc_covariance_matrix.py"
+        "{prefix}/partitions/covariance/{population}/{chromosome}.gz"
+    shell:
+        "python scripts/matrix_to_vector.py {input.partitions} {input.theta2} {input.covariances}  > {output[0]}"
 
 
 

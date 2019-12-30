@@ -77,7 +77,7 @@ cpdef calc_covar(gmapfile, indfile, double NE, double CUTOFF):
 
     for i in range(len_allpos):
 
-            print("  i", i)
+            # print("  i", i)
 
             pos1 = allpos_view[i]
 

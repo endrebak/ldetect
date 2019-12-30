@@ -39,7 +39,9 @@ class MatrixAnalysis:
 		self.end_locus = -1
 		self.end_locus_index = -1
 
+
 	def add_corr_coeff(self, corr_coeff, locus):
+		print("adding corrcoeff for locus", corr_coeff ** 2, locus)
 		if locus not in self.vert_sum:
 			self.vert_sum[locus] = corr_coeff **2
 			self.vert_sum_len[locus] = 1
@@ -320,6 +322,8 @@ class MatrixAnalysis:
 			else:
 				break
 
+
+
 		curr_locus = -1
 		# for p_num, p in enumerate(self.partitions):
 		for p_num in range(last_p_num+1, len(self.partitions)):
@@ -328,6 +332,11 @@ class MatrixAnalysis:
 			flat.print_log_msg('Reading partition: '+str(p))
 			flat.read_partition_into_matrix_lean(self.partitions, p_num, self.matrix, self.locus_list, self.name, self.input_config, self.snp_first, self.snp_last)
 
+			# print("self.partitions", self.partitions[:5])
+			# print("self.locus_list", self.locus_list[:5])
+			# print("self.matrix", list(self.matrix.items())[:1])
+			# print("self.snp_first", self.snp_first)
+			# raise
 			# Determine first locus
 			if curr_locus<0: # Either first partition or not found in first partition
 				# curr_locus = -1 # <- this should have been set to -1 before entering the main for loop

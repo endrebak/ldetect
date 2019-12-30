@@ -199,6 +199,7 @@ def read_partition_into_matrix_lean(partitions, p_index, matrix, locus_list, nam
 			print_log_msg('Error: '+str(e)+' at: '+str(partitions[p_index][0])+' '+str(partitions[p_index][1]))
 
 def write_output(out_filename, locus_list, locus_list_deleted, sum_list, out_delim, sum_list_len=None):
+	raise
 	with gzip.open(out_filename, 'wt') as f_out:
 		csv_writer = csv.writer(f_out, delimiter=out_delim)
 
@@ -229,6 +230,7 @@ def write_output(out_filename, locus_list, locus_list_deleted, sum_list, out_del
 	print_log_msg('Output done')
 
 def write_output_lean(out_filename, locus_list, start, end, sum_list, out_delim, sum_list_len=None):
+	print("sum_list_len " * 10, sum_list_len)
 	with gzip.open(out_filename, 'at') as f_out:
 		csv_writer = csv.writer(f_out, delimiter=out_delim)
 

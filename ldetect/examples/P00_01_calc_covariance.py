@@ -102,11 +102,11 @@ for i in range(len(allpos)):
                 D = f11 - f1*f2
                 Ds = D*ee
                 Ds2 = (1-theta)*(1-theta)*Ds
-               	if math.fabs(Ds2) < CUTOFF:
-                        j = j+1
-                        continue
                 if i == j:
                         Ds2 = Ds2 + (theta/2.0)*(1-theta/2.0)
+               	elif math.fabs(Ds2) < CUTOFF:
+                        j = j+1
+                        continue
                 # print >> outfile, allrs[i], allrs[j], pos1, pos2, gpos1, gpos2, D, Ds2
                 print(str(allrs[i])+' '+str(allrs[j])+' '+str(pos1)+' '+str(pos2)+' '+str(gpos1)+' '+str(gpos2)+' '+str(D)+' '+str(Ds2), file=outfile)
                 j = j+1
