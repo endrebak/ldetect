@@ -43,7 +43,7 @@ wildcard_constraints:
     population = regex(pop_as_list())
 
 
-for rule in ["interpolate_genetic_maps", "partition_chromosomes", "calculate_covariance_matrix"]:
+for rule in ["interpolate_genetic_maps", "partition_chromosomes", "calculate_covariance_matrix", "find_minima"]:
     # print(rule)
     include: "rules/" + rule + ".smk"
 
@@ -73,7 +73,9 @@ rule all:
         # aexpand(rules.partition_chromosomes.output)
         # aexpand(checkpoints.covariance_matrix.output)
         # aexpand("{prefix}/partition_covariances/{population}/{chromosome}/")
-        aexpand("{prefix}/partitions/covariance/{population}/{chromosome}.gz")
+        # aexpand("{prefix}/partitions/covariance/{population}/{chromosome}.gz")
+        # aexpand("{prefix}/partitions/covariance_much_ram/{population}/{chromosome}.gz")
+        aexpand("{prefix}/minima/{population}/{chromosome}.gz")
         # aexpand("{prefix}/collected_covariances/{population}/{chromosome}.gz")
         # aexpand(rules.fetch_variants.output)
 

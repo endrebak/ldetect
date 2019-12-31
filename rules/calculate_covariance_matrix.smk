@@ -1,3 +1,5 @@
+import numpy as np
+
 rule effective_population_size:
     input:
         config["effective_population_sizes"]
@@ -84,17 +86,28 @@ python scripts/calc_covar.py {input.genetic_maps} {input.individuals_to_use} {ef
         #     tend = time()
         #     print("Took:", tend - tstart)
 
+rule intervals_to_parquet:
+    input:
+        "{prefix}/partition_covariances/{population}/{chromosome}/{start}_{end}.tsv.gz"
+    output:
+        "{prefix}/partition_covariances/{population}/{chromosome}/{start}_{end}.pq"
+    run:
+        f = input[0]
+        df = pd.read_csv(f, sep=" ", usecols=[2, 3, 7], names="i j val".split(),
+                         dtype={"i": np.int32, "j": np.int32})
+        df.to_parquet(output[0])
+
 
 def get_intervals(w):
 
     intervals = checkpoints.partition_chromosomes.get(**w).output[0]
     # print(intervals)
     df = pd.read_csv(intervals, header=None, sep=" ")
-    df = df.head(1)
+    # df = df.head(4)
     # print(df)
     starts = df[0].tolist()
     ends = df[1].tolist()
-    f = rules.covariance_matrix.output
+    f = rules.intervals_to_parquet.output
     pops = [w.population] * len(df)
     cs = [w.chromosome] * len(df)
     prefixes = [w.prefix] * len(df)
@@ -145,6 +158,7 @@ rule collect_covariances:
 #     print("theta2", val)
 #     return double(val)
 
+
 rule matrix_to_vector:
     input:
         covariances = get_intervals,
@@ -153,8 +167,24 @@ rule matrix_to_vector:
         # checkpoints.partition_chromosomes.output
     output:
         "{prefix}/partitions/covariance/{population}/{chromosome}.gz"
+    benchmark:
+        "{prefix}/partitions/covariance/{population}/{chromosome}.txt"
     shell:
-        "python scripts/matrix_to_vector.py {input.partitions} {input.theta2} {input.covariances}  > {output[0]}"
+        "python scripts/matrix_to_vector.py {input.partitions} {input.theta2} {input.covariances} > {output[0]}"
 
+
+
+rule matrix_to_vector_much_ram:
+    input:
+        covariances = get_intervals,
+        partitions = "{prefix}/partitions/{population}/{chromosome}.gz",
+        theta2 = rules.calculate_theta2.output[0]
+        # checkpoints.partition_chromosomes.output
+    output:
+        "{prefix}/partitions/covariance_much_ram/{population}/{chromosome}.txt"
+    benchmark:
+        "{prefix}/partitions/covariance_much_ram/{population}/{chromosome}.bmark"
+    shell:
+        "python scripts/matrix_to_vector_much_ram.py {input.partitions} {input.theta2} {input.covariances} # > {output[0]}"
 
 

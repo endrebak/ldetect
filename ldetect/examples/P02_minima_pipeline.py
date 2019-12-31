@@ -28,31 +28,49 @@ import ldetect.pipeline_elements.E08_local_search as local_search
 import commanderline.commander_line as cl
 
 def pipeline(input_fname, chr_name, dataset_path, n_snps_bw_bpoints, out_fname, begin=-1, end=-1, trackback_delta=200, trackback_step=20, init_search_location=1000):
+    print("n_snps_bw_bpoints", n_snps_bw_bpoints)
+    print("trackback_delta", trackback_delta)
+    print("trackback_step", trackback_step)
     config=cnst.return_conf(dataset_path)
     # begin, end = flat.first_last(chr_name, cnst.const[dataset], begin, end)
+    "just reads first and last position in partitions"
     begin, end = flat.first_last(chr_name, config, begin, end)
     # READ DATA
     flat.print_log_msg('* Reading data')
+
+    "just reads into snp pos and val into first and second list"
     init_array, init_array_x = rd.read_data_raw(input_fname) 
+    # print(init_array)
+    # print(init_array_x)
 
     # Clip the input data to the required range and convert to numpy array
+    "just a bisect left and bisect right"
     begin_ind = binsrch.find_ge_ind(init_array_x, begin) # = init_array_x.index(begin)
     end_ind = binsrch.find_le_ind(init_array_x, end) # = init_array_x.index(end)
 
+    print("len before", len(init_array_x))
     np_init_array = np.array(init_array[begin_ind:(end_ind+1)])
     np_init_array_x = np.array(init_array_x[begin_ind:(end_ind+1)])
+    print("len after", len(np_init_array_x))
 
     # DETERMINE NUMBER OF BREAKPOINTS
     n_bpoints = int(math.ceil( len(np_init_array_x) / n_snps_bw_bpoints - 1 ))
     flat.print_log_msg('* Number of breakpoints: '+repr(n_bpoints))
 
+    print("hiya")
+    result = [filt.apply_filter_get_minima(np_init_array, width) for width in range(0, 1000)]
+    print(result)
+    # raise
     # SEARCH FOR FILTER WIDTH
     flat.print_log_msg('* Starting search...')
     found_width = find_minima.custom_binary_search_with_trackback(np_init_array, filt.apply_filter_get_minima, n_bpoints, trackback_delta=trackback_delta, trackback_step=trackback_step, init_search_location=init_search_location)
     flat.print_log_msg('* Found_width: ' + repr(found_width))
+    raise
     
     # GET MINIMA LOCATIONS
     flat.print_log_msg('* Applying filter and getting minima locations...')
+
+    "just applies hanning to init_array"
     g = filt.apply_filter(np_init_array, found_width)
     breakpoint_loci = filt.get_minima_loc(g, np_init_array_x)
     

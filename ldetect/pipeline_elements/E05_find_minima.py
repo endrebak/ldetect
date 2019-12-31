@@ -19,17 +19,21 @@ class FlexibleBoundedAccessor:
 
 	def regular_accessor(self, i):
 		if i >= self.min_ind and i<= self.max_ind:
+			# print("which corresponds to", self.f(self.data, i))
 			return self.f(self.data, i)
 		else:
 			raise Exception('Error: index out of range')
 
 	def inverted_accessor(self, i):
 		if i >= self.min_ind and i<= self.max_ind:
+			print("getting item {} which corresponds to".format(i), self.f(self.data, self.max_ind - i), "the max_idx is", self.max_ind - i)
+			# print(filt.apply_filter(self.data, self.max_ind - i)["filtered_minima_ind"])
 			return self.f(self.data, self.max_ind-i)
 		else:
 			raise Exception('Error: index out of range')
 
 	def __getitem__(self, i):
+
 		return self.accessor(i)
 
 	def __len__(self):
@@ -57,7 +61,12 @@ def find_end(data, f, x, val, max_srch_val=float('inf')):
 	if x>=max_srch_val:
 		raise Exception('Error: Max search value exceeded')
 
-	if f(data, x) < val:
+	print("x is", x)
+	print("val is", val)
+	res = f(data, x)
+	print("f(data, x)", res)
+	print("-----" * 5)
+	if res < val:
 		return x
 	else:
 		return find_end(data, f, x*2, val)
@@ -65,9 +74,13 @@ def find_end(data, f, x, val, max_srch_val=float('inf')):
 def trackback(wrapper, srch_val, start_search, delta_coarse, step_coarse, step_fine=1):
 	found_more = True # just to enter loop
 	flat.print_log_msg('Starting coarse search')
+	flat.print_log_msg('step_coarse {}'.format(step_coarse))
+	flat.print_log_msg('delta_coarse {}'.format(delta_coarse))
+	print(list(range(start_search+step_coarse, start_search+delta_coarse, step_coarse)))
 	while found_more: # whenever we find more, search continues looking as far as delta width from newly found location
 		found_more = False
 		for i in range(start_search+step_coarse, start_search+delta_coarse, step_coarse):
+			flat.print_log_msg("i: {}".format(i))
 			if i>=len(wrapper):
 				break
 			if wrapper[i] == srch_val:
@@ -99,11 +112,17 @@ def custom_binary_search_with_trackback(np_init_array, f, srch_val, trackback_de
 	flat.print_log_msg('Starting custom_binary_search_with_trackback')
 
 	# One-sided binary (i.e., exponential) search first
+	"apply f to np_init_array and check if init_search_location is smaller than srch_val"
+	"if not, double init search val and try again"
+
+	print('search_val: ', srch_val)
 	end_v = find_end(np_init_array, f, init_search_location, srch_val)
 	print('end_v: ', end_v)
 	wrapper = FlexibleBoundedAccessor(np_init_array, f, 0, end_v, True)
+
 	# Search with deferred detection of equality
 	found_width_raw = binsrch.find_le_ind(wrapper, srch_val)
+	print('found_width_raw: ', found_width_raw)
 	found_width = end_v - found_width_raw
 	print('found_width: ', found_width)
 
@@ -144,4 +163,5 @@ def main():
 	flat.print_log_msg('Done')
 
 if __name__ == '__main__':
+	raise
 	main()

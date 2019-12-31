@@ -3,7 +3,9 @@ import scipy.signal as sig
 import scipy.ndimage.filters as filters
 
 def apply_filter_get_minima(np_init_array, width):
+	# print("width in filter is", width)
 	el = apply_filter(np_init_array, width)
+	# print("minima", el['filtered_minima_ind'])
 
 	return len(el['filtered_minima_ind'])
 
@@ -32,9 +34,10 @@ def apply_filter(np_init_array, width):
 
 	minima_a = sig.argrelextrema(ga, np.less)[0]
 
-	print(2*width+1, len(minima_a))
+	# print(2*width+1, len(minima_a))
 
 	minima_a_vals = [ga[i] for i in minima_a]
+	# print("minima_a_vals", minima_a_vals)
 
 	el = {  'width':width, 
 			'window':a, 
