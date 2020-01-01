@@ -58,14 +58,13 @@ def pipeline(input_fname, chr_name, dataset_path, n_snps_bw_bpoints, out_fname, 
     flat.print_log_msg('* Number of breakpoints: '+repr(n_bpoints))
 
     print("hiya")
-    result = [filt.apply_filter_get_minima(np_init_array, width) for width in range(0, 1000)]
-    print(result)
+    # result = [filt.apply_filter_get_minima(np_init_array, width) for width in range(0, 1000)]
+    # print(result)
     # raise
     # SEARCH FOR FILTER WIDTH
     flat.print_log_msg('* Starting search...')
     found_width = find_minima.custom_binary_search_with_trackback(np_init_array, filt.apply_filter_get_minima, n_bpoints, trackback_delta=trackback_delta, trackback_step=trackback_step, init_search_location=init_search_location)
     flat.print_log_msg('* Found_width: ' + repr(found_width))
-    raise
     
     # GET MINIMA LOCATIONS
     flat.print_log_msg('* Applying filter and getting minima locations...')
@@ -81,6 +80,7 @@ def pipeline(input_fname, chr_name, dataset_path, n_snps_bw_bpoints, out_fname, 
     metric_out = apply_metric(chr_name, begin, end, config, breakpoint_loci)
     flat.print_log_msg('Global metric:')
     print_metric(metric_out)
+    raise
     
     # METRIC FOR UNIFORM BREAKPOINTS
     flat.print_log_msg('* Calculating metric for uniform breakpoints...')

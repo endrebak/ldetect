@@ -338,9 +338,16 @@ class Metric:
                 if  curr_breakpoint_index<len(self.breakpoints): 
                     if curr_locus > self.breakpoints[curr_breakpoint_index]: # Breakpoint is the last element of the block!
 #                         block_height =  len(self.locus_list) - curr_locus_index
+                        print("--------" * 5)
+                        print("curr_locus", curr_locus)
+                        print("curr_breakpoint", self.breakpoints[curr_breakpoint_index])
                         block_height =  0 - total_N_SNPs # - 1 # ? # this is in accordance with the formula for deferred sum calculation 
+                        print("block_height", block_height)
+                        print("block_width", block_width)
                         self.metric['N_zero'] += block_height * block_width
+                        print("nzero", self.metric['N_zero'])
                         block_width_sum += block_width
+                        print("block_width_sum", block_width_sum)
                         
                         curr_breakpoint_index += 1
                         block_width = 0

@@ -74,6 +74,7 @@ def find_end(data, f, x, val, max_srch_val=float('inf')):
 def trackback(wrapper, srch_val, start_search, delta_coarse, step_coarse, step_fine=1):
 	found_more = True # just to enter loop
 	flat.print_log_msg('Starting coarse search')
+	flat.print_log_msg('start_search {}'.format(start_search))
 	flat.print_log_msg('step_coarse {}'.format(step_coarse))
 	flat.print_log_msg('delta_coarse {}'.format(delta_coarse))
 	print(list(range(start_search+step_coarse, start_search+delta_coarse, step_coarse)))
@@ -89,6 +90,7 @@ def trackback(wrapper, srch_val, start_search, delta_coarse, step_coarse, step_f
 				break
 
 	# By default, step_fine = 1, therefore fine-grained search will happen. It can be disabled by setting step_fine to 0.
+	print("step_file", step_fine)
 	if step_fine > 0:
 		if step_fine > step_coarse:
 			raise Exception('Error: step_fine is greater than step_coarse')
@@ -99,6 +101,7 @@ def trackback(wrapper, srch_val, start_search, delta_coarse, step_coarse, step_f
 		while found_more: # whenever we find more, search continues looking as far as delta width from there
 			found_more = False
 			for i in range(start_search+step_fine, start_search+delta_fine, step_fine):
+				flat.print_log_msg("fine_search i: {}".format(i))
 				if i>=len(wrapper):
 					break
 				if wrapper[i] == srch_val:
@@ -128,6 +131,7 @@ def custom_binary_search_with_trackback(np_init_array, f, srch_val, trackback_de
 
 	# Find any remaining "noisy" minima
 	found_width_trackback_raw = trackback(wrapper, srch_val, found_width_raw, trackback_delta, trackback_step)
+	print("found_width_trackback_raw", found_width_trackback_raw)
 	found_width_trackback = end_v - found_width_trackback_raw
 
 	# Final result
