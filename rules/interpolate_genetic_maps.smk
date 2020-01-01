@@ -79,12 +79,13 @@ rule fetch_variants:
 
 
 
-rule fetch_variants_index:
+rule index_variants:
+    input:
+        rules.fetch_variants.output[0]
     output:
         "{prefix}/1kg/{chromosome}.vcf.gz.tbi"
-    run:
-        url = variant_url.format(chromosome=wildcards.chromosome) + ".tbi"
-        shell("curl {url} > {output[0]}")
+    shell:
+        "tabix {input[0]}"
 
 
 rule vcf_to_bed:

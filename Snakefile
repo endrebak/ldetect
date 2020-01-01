@@ -29,7 +29,7 @@ def get_number_of_individuals_in_reference_panel(w):
 
 
 chromosomes = ["chr" + str(i) for i in range(1, 23)]
-chromosomes = ["chr22"]
+chromosomes = ["chr1"] #, "chr22"]
 prefix = config["prefix"]
 populations = pop_as_list()
 # populations = pd.read_table(config["recombination_rates"], header=None, squeeze=True).to_list()
@@ -74,8 +74,8 @@ rule all:
         # aexpand(checkpoints.covariance_matrix.output)
         # aexpand("{prefix}/partition_covariances/{population}/{chromosome}/")
         # aexpand("{prefix}/partitions/covariance/{population}/{chromosome}.gz")
-        # aexpand("{prefix}/partitions/covariance_much_ram/{population}/{chromosome}.gz")
-        aexpand("{prefix}/minima/{population}/{chromosome}.gz")
+        aexpand("{prefix}/partitions/covariance_much_ram/{population}/{chromosome}.txt")
+        # aexpand("{prefix}/minima/{population}/{chromosome}.gz")
         # aexpand("{prefix}/collected_covariances/{population}/{chromosome}.gz")
         # aexpand(rules.fetch_variants.output)
 

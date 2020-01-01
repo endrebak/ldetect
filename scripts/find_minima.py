@@ -5,6 +5,7 @@ import scipy.ndimage.filters as filters
 import scipy.signal as sig
 
 import math
+sqrt = math.sqrt
 import numpy as np
 
 from time import time
@@ -16,6 +17,8 @@ df = pd.read_table(f, header=None, names="pos val".split())
 f2 = argv[2]
 
 partitions = pd.read_table(f2, header=None, sep=" ")
+
+covariance_files = argv[3:]
 
 # def _apply_filter(a, width):
 
@@ -121,9 +124,7 @@ def find_breakpoint_loci(df, n_snps=50):
     return pos[filtered]
 
 
-def compute_metric(loci, partitions, breakpoints):
-
-    "Compute sum of correlation coefficients, N_zero and N_nonzero"
+def compute_zero_metric(loci, partitions, breakpoints):
 
     # end locus is just start of next
     # or last snp smaller than last partition end
@@ -149,50 +150,134 @@ def compute_metric(loci, partitions, breakpoints):
     nzero = 0
     # breakpoints_iter = iter(breakpoints)
     curr_breakpoint_index = 0
-    print(breakpoints)
     curr_breakpoint = breakpoints[curr_breakpoint_index]
 
-    with open("curr_locus_and_breakpoints.txt", "w+") as clb:
-        for start, end in partitions.itertuples(index=False):
+    # with open("curr_locus_and_breakpoints.txt", "w+") as clb:
+    #     for start, end in partitions.itertuples(index=False):
+    loci_to_compute_later = np.zeros(len(loci), dtype=int)
+    breakpoints_out = np.zeros(len(loci), dtype=int)
 
+
+    for i in range(len(loci)):
+        curr_locus = loci[curr_locus_index]
+        # while curr_locus < end:
+        curr_breakpoint = breakpoints[curr_breakpoint_index]
+        if curr_locus > curr_breakpoint:
+
+            block_height = 0 - total_snps
+            nzero += block_height * block_width
+            block_width_sum += block_width
+
+            # print("-----" * 5)
+            # print("curr_locus", curr_locus)
+            # print("curr_breakpoint", curr_breakpoint)
+            # print("block_height", block_height)
+            # print("block_width", block_width)
+            # print("nzero", nzero)
+            # print("block_width_sum", block_width_sum)
+
+            block_width = 0
+
+            curr_breakpoint_index += 1
+
+        if curr_breakpoint_index >= len(breakpoints):
+            break
+
+        # print(total_snps)
+        loci_to_compute_later[total_snps] = curr_locus
+        breakpoints_out[total_snps] = breakpoints[curr_breakpoint_index]
+
+        block_width += 1
+
+        if curr_locus_index + 1 < len(loci):
+            curr_locus_index += 1
             curr_locus = loci[curr_locus_index]
-            while curr_locus < end:
-                curr_breakpoint = breakpoints[curr_breakpoint_index]
-                if curr_locus > curr_breakpoint:
+            total_snps += 1
 
-                    block_height = 0 - total_snps
-                    nzero += block_height * block_width
-                    block_width_sum += block_width
+    nzero += total_snps * block_width_sum
 
-                    print("-----" * 5)
-                    print("curr_locus", curr_locus)
-                    print("curr_breakpoint", curr_breakpoint)
-                    print("block_height", block_height)
-                    print("block_width", block_width)
-                    print("nzero", nzero)
-                    print("block_width_sum", block_width_sum)
-
-                    block_width = 0
-
-                    curr_breakpoint_index += 1
-
-                if curr_breakpoint_index >= len(breakpoints):
-                    break
-
-                clb.write("{}\t{}\n".format(curr_locus, breakpoints[curr_breakpoint_index]))
-
-                block_width += 1
-
-                if curr_locus_index + 1 < len(loci):
-                    curr_locus_index += 1
-                    curr_locus = loci[curr_locus_index]
-                    total_snps += 1
-
-    return nzero
+    # print("len(loci)", len(loci))
+    return nzero, loci_to_compute_later[:total_snps], breakpoints_out[:total_snps]
 
 
-breakpoints = find_breakpoint_loci(df)
+def compute_sum_and_nonzero(loci, bps, i_, j_, covars, autocovar):
 
-nzero = compute_metric(df.pos.tolist(), partitions, breakpoints)
+    # print("loci", loci)
+    # print("bps", bps)
+    # print("covars", covars)
 
-print("nzero", nzero)
+    i = 0
+    j = 0
+    nonzero = 0
+    metric_sum = 0
+    covar_len = len(covars)
+    for i in range(len(loci)):
+        locus = loci[i]
+        breakpoint = bps[i]
+
+        # print("i", i)
+        # print(covars.iloc[j])
+
+        while j < covar_len and i_[j] != locus:
+            # print("!= locus", j)
+            j += 1
+
+        while j < covar_len and i_[j] == locus:
+            # print("== locus", j)
+            if j_[j] > breakpoint:
+                corrcoeff = covars[j] / sqrt(autocovar[i_[j]] * autocovar[j_[j]])
+                metric_sum += corrcoeff ** 2
+                # print(i_[j], j_[j], covars[j], autocovar[i_[j]], autocovar[j_[j]], corrcoeff ** 2)
+                nonzero += 1
+
+            j += 1
+
+             
+        # print("j", j)
+
+    return metric_sum, nonzero
+
+
+
+
+
+
+
+
+
+
+
+
+if __name__ == "__main__":
+
+    breakpoints = find_breakpoint_loci(df)
+
+    zero_metric, loci_to_compute_later, later_bps = compute_zero_metric(df.pos.tolist(), partitions, breakpoints)
+
+    covars = pd.concat([pd.read_csv(f, sep=" ", usecols=[2, 3, 7], names="i j val".split())
+                                    for f in covariance_files])
+
+    autocovar = covars[covars.i.values == covars.j.values].drop("j", 1).set_index("i").squeeze().to_dict()
+
+    # print(autocovar)
+
+    metric_sum, nonzero = compute_sum_and_nonzero(loci_to_compute_later, later_bps, covars.i.values, covars.j.values, covars.val.values, autocovar)
+
+    # print("metric_sum", metric_sum)
+    # print("nonzero", nonzero)
+
+
+    # iterate over covar file to find all needed covariances
+
+    # find autocorrelation for all loci: not that big a dict?
+    # then can iterate over each locus to compute and computation is straightforward
+
+
+# bps_per_loci = next_breakpoint_per_loci(df.pos, breakpoints)
+
+# print(bps_per_loci)
+# create array of loci and their breakpoint for simplicity in next algo
+
+# find
+# insert = np.searchsorted(df.pos.values, breakpoints, side="right") - 1
+

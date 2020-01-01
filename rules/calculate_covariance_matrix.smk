@@ -19,7 +19,7 @@ rule subset_on_population:
     input:
         variants = rules.fetch_variants.output[0],
         samples = rules.individuals_in_reference_panel.output.samples,
-        index = rules.fetch_variants_index.output[0]
+        index = rules.index_variants.output[0]
     output:
         protected("{prefix}/1kg/{population}/{chromosome}.vcf.gz")
     shell:

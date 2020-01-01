@@ -21,6 +21,11 @@ from ldetect2.src.calc_covar import calc_covar
 
 
 df = pd.read_table(sys.stdin, header=None)
+
+# pos2gpos = pd.read_table(gmapfile, index_col=0, header=None, sep=" ", squeeze=True)
+# allpos = df.pop(0) #.tolist()
+# pos2gpos = pos2gpos[allpos]
+
 calc_covar(df, gmapfile, indfile, NE, CUTOFF)
 
 

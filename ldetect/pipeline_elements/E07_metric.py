@@ -240,6 +240,7 @@ class Metric:
         # except OSError:
         #     pass
         
+        # handle = open("nonzero.txt", "w+")
         if not self.dynamic_delete:
             raise Exception('Error: dynamic delete must be True for metric calculation!')
 
@@ -356,12 +357,14 @@ class Metric:
                     break
                 
 #                 found = False
+
                 try:
                     for key, el in self.matrix[curr_locus].items():
                         if key > self.breakpoints[curr_breakpoint_index]: # Only add those above the breakpoint!
                             corr_coeff = self.matrix[curr_locus][key] / math.sqrt( self.matrix[curr_locus][curr_locus] * self.matrix[key][key] )
                             self.metric['sum'] += decimal.Decimal(corr_coeff**2)
                             self.metric['N_nonzero'] += 1
+                            # handle.write("{} {} {} {} {} {}\n".format(curr_locus, key, self.matrix[curr_locus][key], self.matrix[curr_locus][curr_locus], self.matrix[key][key], corr_coeff ** 2))
 #                             found = True
                 except IndexError as e:
                     print('Error!')
@@ -413,7 +416,11 @@ class Metric:
         self.end_locus = end_locus
         self.end_locus_index = end_locus_index
         
+        print(total_N_SNPs)
+        print(block_width_sum)
         self.metric['N_zero'] += total_N_SNPs * block_width_sum # this is in accordance with the formula for deferred sum calculation
+        print("final_N_zero", self.metric['N_zero'])
+        print("final_N_nonzero", self.metric['N_nonzero'])
         
         print('total_N_SNPs, block_width', total_N_SNPs, block_width)
         print('total_N_SNPs-block_width', total_N_SNPs-block_width)

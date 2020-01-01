@@ -1,7 +1,8 @@
 
 rule variant_samples:
     input:
-        rules.fetch_variants.output[0]
+        rules.fetch_variants.output[0],
+        rules.index_variants.output[0]
     output:
         "{prefix}/1kg/{chromosome}_samples.tsv"
     resources:
@@ -15,8 +16,8 @@ rule individuals_in_reference_panel:
         samples = config["sample_info"],
         in_vcf = rules.variant_samples.output[0]
     output:
-        n_ind = protected("{prefix}/partitions/{population}/{chromosome}/n_individuals.txt"),
-        samples = protected("{prefix}/partitions/{population}/{chromosome}/samples.txt")
+        n_ind = "{prefix}/partitions/{population}/{chromosome}/n_individuals.txt",
+        samples = "{prefix}/partitions/{population}/{chromosome}/samples.txt"
     run:
         df = pd.read_table(input["samples"])
         in_vcf = pd.read_table(input["in_vcf"], header=None, squeeze=True).to_list()
