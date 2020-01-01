@@ -80,25 +80,26 @@ def pipeline(input_fname, chr_name, dataset_path, n_snps_bw_bpoints, out_fname, 
     metric_out = apply_metric(chr_name, begin, end, config, breakpoint_loci)
     flat.print_log_msg('Global metric:')
     print_metric(metric_out)
-    raise
     
     # METRIC FOR UNIFORM BREAKPOINTS
-    flat.print_log_msg('* Calculating metric for uniform breakpoints...')
-    # step = int((end-begin)/(len(breakpoint_loci)+1))
-    # breakpoint_loci_uniform = [l for l in range(begin+step, end-step+1, step)] 
-    step = int(len(init_array_x)/(len(breakpoint_loci)+1))
-    breakpoint_loci_uniform = [init_array_x[i] for i in range(step, len(init_array_x)-step+1, step)]
+    # flat.print_log_msg('* Calculating metric for uniform breakpoints...')
+    # # step = int((end-begin)/(len(breakpoint_loci)+1))
+    # # breakpoint_loci_uniform = [l for l in range(begin+step, end-step+1, step)] 
+    # step = int(len(init_array_x)/(len(breakpoint_loci)+1))
+    # breakpoint_loci_uniform = [init_array_x[i] for i in range(step, len(init_array_x)-step+1, step)]
 
-    # metric_out_uniform = apply_metric(chr_name, begin, end, cnst.const[dataset], breakpoint_loci_uniform)
-    metric_out_uniform = apply_metric(chr_name, begin, end, config, breakpoint_loci_uniform)
-    flat.print_log_msg('Global metric:')
-    print_metric(metric_out_uniform)
+    # # metric_out_uniform = apply_metric(chr_name, begin, end, cnst.const[dataset], breakpoint_loci_uniform)
+    # metric_out_uniform = apply_metric(chr_name, begin, end, config, breakpoint_loci_uniform)
+    # flat.print_log_msg('Global metric:')
+    # print_metric(metric_out_uniform)
     
     # LOCAL SEARCH ON FOURIER - missing N runs
     flat.print_log_msg('* Running local search for fourier...')
 
     # breakpoint_loci_local_search = run_local_search_complete(chr_name, breakpoint_loci, begin, end, cnst.const[dataset], metric_out)
     breakpoint_loci_local_search = run_local_search_complete(chr_name, breakpoint_loci, begin, end, config, metric_out)
+    print(breakpoint_loci_local_search)
+    raise
     
     # RUN METRIC AGAIN W/ NEW BREAKPOINTS FROM FOURIER LOCAL SEARCH
     flat.print_log_msg('* Calculating metric for new fourier breakpoints...')
@@ -205,7 +206,7 @@ def run_local_search_complete(chr_name, breakpoint_loci, begin, end, input_confi
 
 def run_local_search_single(chr_name, breakpoint_loci, locus_index, start, stop, total_sum, total_N, input_config, metric_out):
     try:
-        local_search_run = local_search.LocalSearch(chr_name, start, stop, locus_index, breakpoint_loci, total_sum, total_N, input_config)       
+        local_search_run = local_search.LocalSearch(chr_name, start, stop, locus_index, breakpoint_loci, total_sum, total_N, input_config)
         
         new_breakpoint, new_metric = local_search_run.search()
         

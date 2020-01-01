@@ -263,6 +263,7 @@ if __name__ == "__main__":
 
     metric_sum, nonzero = compute_sum_and_nonzero(loci_to_compute_later, later_bps, covars.i.values, covars.j.values, covars.val.values, autocovar)
 
+
     # print("metric_sum", metric_sum)
     # print("nonzero", nonzero)
 
