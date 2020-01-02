@@ -28,9 +28,9 @@ import ldetect.pipeline_elements.E08_local_search as local_search
 import commanderline.commander_line as cl
 
 def pipeline(input_fname, chr_name, dataset_path, n_snps_bw_bpoints, out_fname, begin=-1, end=-1, trackback_delta=200, trackback_step=20, init_search_location=1000):
-    print("n_snps_bw_bpoints", n_snps_bw_bpoints)
-    print("trackback_delta", trackback_delta)
-    print("trackback_step", trackback_step)
+    # print("n_snps_bw_bpoints", n_snps_bw_bpoints)
+    # print("trackback_delta", trackback_delta)
+    # print("trackback_step", trackback_step)
     config=cnst.return_conf(dataset_path)
     # begin, end = flat.first_last(chr_name, cnst.const[dataset], begin, end)
     "just reads first and last position in partitions"
@@ -47,24 +47,24 @@ def pipeline(input_fname, chr_name, dataset_path, n_snps_bw_bpoints, out_fname, 
     "just a bisect left and bisect right"
     begin_ind = binsrch.find_ge_ind(init_array_x, begin) # = init_array_x.index(begin)
     end_ind = binsrch.find_le_ind(init_array_x, end) # = init_array_x.index(end)
-
-    print("len before", len(init_array_x))
+    # 
+    # print("len before", len(init_array_x))
     np_init_array = np.array(init_array[begin_ind:(end_ind+1)])
     np_init_array_x = np.array(init_array_x[begin_ind:(end_ind+1)])
-    print("len after", len(np_init_array_x))
+    # print("len after", len(np_init_array_x))
 
     # DETERMINE NUMBER OF BREAKPOINTS
     n_bpoints = int(math.ceil( len(np_init_array_x) / n_snps_bw_bpoints - 1 ))
-    flat.print_log_msg('* Number of breakpoints: '+repr(n_bpoints))
+    # flat.print_log_msg('* Number of breakpoints: '+repr(n_bpoints))
 
-    print("hiya")
+    # print("hiya")
     # result = [filt.apply_filter_get_minima(np_init_array, width) for width in range(0, 1000)]
     # print(result)
     # raise
     # SEARCH FOR FILTER WIDTH
-    flat.print_log_msg('* Starting search...')
+    # flat.print_log_msg('* Starting search...')
     found_width = find_minima.custom_binary_search_with_trackback(np_init_array, filt.apply_filter_get_minima, n_bpoints, trackback_delta=trackback_delta, trackback_step=trackback_step, init_search_location=init_search_location)
-    flat.print_log_msg('* Found_width: ' + repr(found_width))
+    # flat.print_log_msg('* Found_width: ' + repr(found_width))
     
     # GET MINIMA LOCATIONS
     flat.print_log_msg('* Applying filter and getting minima locations...')
@@ -74,12 +74,12 @@ def pipeline(input_fname, chr_name, dataset_path, n_snps_bw_bpoints, out_fname, 
     breakpoint_loci = filt.get_minima_loc(g, np_init_array_x)
     
     # METRIC
-    flat.print_log_msg('* Calculating metric for non-uniform breakpoints (minima of filtered data)...')
+    # flat.print_log_msg('* Calculating metric for non-uniform breakpoints (minima of filtered data)...')
         
     # metric_out = apply_metric(chr_name, begin, end, cnst.const[dataset], breakpoint_loci)
     metric_out = apply_metric(chr_name, begin, end, config, breakpoint_loci)
-    flat.print_log_msg('Global metric:')
-    print_metric(metric_out)
+    # flat.print_log_msg('Global metric:')
+    # print_metric(metric_out)
     
     # METRIC FOR UNIFORM BREAKPOINTS
     # flat.print_log_msg('* Calculating metric for uniform breakpoints...')
@@ -156,9 +156,13 @@ def midpoint(a, b):
         first = a
         second = b
 
+    print("midpoint of {} and {} is {}".format(a, b, first + (second-first)/2))
+    print("second minus first is {}".format((second-first)))
     return first + (second-first)/2 # Takes care of huge values (overflow)
 
 def run_local_search_complete(chr_name, breakpoint_loci, begin, end, input_config, metric_out):
+
+    print("--- Run local search complete")
     breakpoint_loci_local_search = {}
     breakpoint_loci_local_search['loci'] = []
     breakpoint_loci_local_search['metrics'] = []
@@ -205,7 +209,9 @@ def run_local_search_complete(chr_name, breakpoint_loci, begin, end, input_confi
     return breakpoint_loci_local_search 
 
 def run_local_search_single(chr_name, breakpoint_loci, locus_index, start, stop, total_sum, total_N, input_config, metric_out):
+    print("---- Running local search single")
     try:
+        print("----", start, stop, locus_index, breakpoint_loci, total_sum, total_N)
         local_search_run = local_search.LocalSearch(chr_name, start, stop, locus_index, breakpoint_loci, total_sum, total_N, input_config)
         
         new_breakpoint, new_metric = local_search_run.search()
@@ -215,9 +221,10 @@ def run_local_search_single(chr_name, breakpoint_loci, locus_index, start, stop,
         return new_breakpoint, new_metric
     except Exception as e:
         flat.print_log_msg('Error!')
+        flat.print_log_msg(str(e))
         flat.print_log_msg('start: '+repr(start))
         flat.print_log_msg('stop: '+repr(stop))
-        flat.print_log_msg('local_search.__dict__: '+repr(local_search.__dict__))
+        # flat.print_log_msg('local_search.__dict__: '+repr(local_search.__dict__))
         flat.print_log_msg('Continuing...')
         return breakpoint_loci[locus_index], None
 

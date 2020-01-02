@@ -241,28 +241,160 @@ def compute_sum_and_nonzero(loci, bps, i_, j_, covars, autocovar):
 
 
 
+def initialize_search(covars, autocovars):
+
+    """TODO: ensure that covars only between start and ends of search
+
+    For first block, include all snps, even though they are not above search start"""
+
+    # from sklearn.utils.fast_dict import IntFloatDict as fdict
+
+    iloci = covars.i.drop_duplicates()
+    jloci = covars.j.drop_duplicates()
+    length = len(iloci)
+    # v, h = np.zeros(length), np.zeros(length)
+    v, h = dict(zip(iloci, [0] * len(iloci))), dict(zip(jloci, [0] * len(jloci)))
+
+    for i, j, val in covars.itertuples(index=False):
+        corr_coeff = (val / math.sqrt(autocovars[i] * autocovars[j])) ** 2
+        # print("ijval", i, j, val, corr_coeff, autocovars[i], autocovars[j])
+        v[i] += corr_coeff
+        h[j] += corr_coeff
+        
+    print(v[39967768])
+    # print(h[39967768])
+    # raise
+
+    return v, h
+    # only compute between the breakpoints
+
+    # while curr_locus <= end_locus:
+
+    # for first block (initial_breakpoint) always include snps, otherwise
+    # require that curr_locus > snp_first
+
+
+
+
+    # horizontal = fdict()
+
+
+# def local_search(v, h, partitions, metric_sum, zero, nonzero):
 
 
 
 
 
+def search_starts_ends(breakpoints, partitions):
+    diff = pd.Series(breakpoints).diff()
+    # print(diff)
+    search_starts = (breakpoints + (diff/2).shift(-1)).shift()
+    search_starts[0] = partitions.iloc[0, 0]
+    search_starts = search_starts.astype(int)
+    search_ends = search_starts.shift(-1)
+    search_ends.values[-1] = partitions.iloc[-1, 1]
+
+    search_ends = search_ends.astype(int)
+
+    bps = pd.Series(breakpoints)
+    bps_next = bps.shift(-1)
+    bps_next.values[-1] = partitions.iloc[-1, 1]
+    bps_next = bps_next.astype(int)
+    df = pd.concat([search_starts, search_ends, bps, bps_next], axis=1)
+
+    return df
 
 
+def local_search(loci, v, h, breakpoint, snp_bottom_idx, snp_top_idx, metric_sum, zero_metric):
+
+    idx = np.searchsorted(loci, breakpoint) + 1
+    loci = loci[loci.values[idx] < loci]
+
+    n_horiz = 0
+    n_vert = 0
+    n_curr = 0
+    curr_sum = metric_sum
+
+    # print("curr_sum", curr_sum)
+    for curr_loc in loci:
+        # print(h[curr_loc], v[curr_loc])
+        curr_sum = curr_sum - h[curr_loc] + v[curr_loc]
+        # print("curr_sum", curr_sum)
+        n_horiz = idx - snp_bottom_idx - 1
+        n_vert = snp_top_idx - idx
+        n_curr = n_curr - n_horiz + n_vert
+
+        curr_metric = curr_sum / n_curr
+        # print("curr_loc", curr_loc, "curr_metric", curr_metric)
+        # print("idx", idx)
+
+        idx += 1
+
+    # find the index in locus_list less or equal to the current breakpoint
+    # that is the start of the search?
+    # raise
+
+    
+
+    pass
+
+    
 if __name__ == "__main__":
 
     breakpoints = find_breakpoint_loci(df)
+    # print(breakpoints)
 
-    zero_metric, loci_to_compute_later, later_bps = compute_zero_metric(df.pos.tolist(), partitions, breakpoints)
+    loci = df.pos
+    zero_metric, loci_to_compute_later, later_bps = compute_zero_metric(loci.tolist(), partitions, breakpoints)
 
     covars = pd.concat([pd.read_csv(f, sep=" ", usecols=[2, 3, 7], names="i j val".split())
                                     for f in covariance_files])
 
     autocovar = covars[covars.i.values == covars.j.values].drop("j", 1).set_index("i").squeeze().to_dict()
 
-    # print(autocovar)
-
     metric_sum, nonzero = compute_sum_and_nonzero(loci_to_compute_later, later_bps, covars.i.values, covars.j.values, covars.val.values, autocovar)
 
+    starts_ends = search_starts_ends(breakpoints, partitions)
+    # print(starts_ends)
+    # raise
+    # raise
+
+    for count, (start, end, breakpoint, nbp) in enumerate(starts_ends.itertuples(index=False)):
+        print(start, end, breakpoint, nbp)
+        if count != 0:
+            good_covars_idx = (covars.i < end) & (covars.j < nbp) & (covars.i > start)
+            good_covars = covars[good_covars_idx]
+            good_loci_idx = (loci < end) & (loci > start)
+            good_loci = loci[good_loci_idx]
+
+        else:
+            good_covars_idx = (covars.i < end) & (covars.j < nbp) 
+            good_loci = loci[loci < end]
+            good_covars = covars[good_covars_idx]
+
+        # print(good_covars[good_covars.i == 39967768])
+        # raise
+
+        v, h = initialize_search(good_covars, autocovar)
+
+        # print(len(good_loci))
+        snp_bottom_idx = np.searchsorted(loci, start, side="right") - 1
+        snp_top_idx = np.searchsorted(loci, end) 
+
+        # print("----" * 5)
+        # print("bottom", snp_bottom_idx)
+        # print("top", snp_top_idx)
+
+
+
+        # print("diff", snp_top_idx - snp_bottom_idx)
+        local_search(good_loci, v, h, breakpoint, snp_bottom_idx, snp_top_idx, metric_sum, zero_metric)
+
+        
+    # v, h = initialize_search(covars, autocovar)
+    # print(len(h))
+    
+    # breakpoint_loci_local_search = run_local_search_complete(chr_name, breakpoint_loci, begin, end, config, metric_out)
 
     # print("metric_sum", metric_sum)
     # print("nonzero", nonzero)

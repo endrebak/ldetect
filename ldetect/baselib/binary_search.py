@@ -22,13 +22,13 @@ def find_lt(a, x):
 
 def find_le_ind(a, x):
     'Find rightmost value less than or equal to x'
-    print("IN" * 100)
-    print("search_val", x)
-    print("len(a)", len(a))
+    # print("IN" * 100)
+    # print("search_val", x)
+    # print("len(a)", len(a))
     i = bisect.bisect_right(a, x)
-    print("found idx", i)
+    # print("found idx", i)
 
-    print(" OUT" * 100)
+    # print(" OUT" * 100)
     if i:
         return i-1
     raise ValueError('find_le: Not found!')

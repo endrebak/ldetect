@@ -26,7 +26,7 @@ class FlexibleBoundedAccessor:
 
 	def inverted_accessor(self, i):
 		if i >= self.min_ind and i<= self.max_ind:
-			print("getting item {} which corresponds to".format(i), self.f(self.data, self.max_ind - i), "the max_idx is", self.max_ind - i)
+			# print("getting item {} which corresponds to".format(i), self.f(self.data, self.max_ind - i), "the max_idx is", self.max_ind - i)
 			# print(filt.apply_filter(self.data, self.max_ind - i)["filtered_minima_ind"])
 			return self.f(self.data, self.max_ind-i)
 		else:
