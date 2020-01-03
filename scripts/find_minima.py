@@ -280,7 +280,7 @@ def initialize_search(covars, autocovars):
     # horizontal = fdict()
 
 
-# def local_search(v, h, partitions, metric_sum, zero, nonzero):
+# def local_search_right(v, h, partitions, metric_sum, zero, nonzero):
 
 
 
@@ -306,10 +306,13 @@ def search_starts_ends(breakpoints, partitions):
     return df
 
 
-def local_search(loci, v, h, breakpoint, snp_bottom_idx, snp_top_idx, metric_sum, zero_metric):
+def local_search_right(loci, v, h, breakpoint, snp_bottom_idx, snp_top_idx, metric_sum, zero_metric):
 
     idx = np.searchsorted(loci, breakpoint) + 1
+    print("len(loci)", len(loci))
+    # print("idx", idx, len(loci), print(type(loci)))
     # print("idx", idx, loci.values[idx])
+    init_breakpoint_locus = loci[idx]
     loci = loci[idx:]
     # print("loci")
     # print(loci)
@@ -318,33 +321,45 @@ def local_search(loci, v, h, breakpoint, snp_bottom_idx, snp_top_idx, metric_sum
     n_vert = 0
     n_curr = zero_metric
     curr_sum = metric_sum
+    min_metric = curr_sum / zero_metric
+    min_breakpoint = -1
+    min_distance_right = -1
 
+    print("curr_loc", loci[0])
     for curr_loc in loci:
 
         curr_sum = curr_sum - h[curr_loc] + v[curr_loc]
         # print("curr_sum", curr_sum)
-        print("idx", idx)
+        # print("idx", idx)
         n_horiz = idx - snp_bottom_idx - 1
-        print("n_horiz", n_horiz)
+        # print("n_horiz", n_horiz)
         n_vert = snp_top_idx - idx
-        print("n_vert", n_vert)
+        # print("n_vert", n_vert)
         n_curr = n_curr - n_horiz + n_vert
-        print("n_curr", n_curr)
+        # print("n_curr", n_curr)
 
         curr_metric = curr_sum / n_curr
-        print(curr_loc, "curr_metric", curr_metric, h[curr_loc], v[curr_loc])
+        # print(curr_loc, "curr_metric", curr_metric, h[curr_loc], v[curr_loc])
         # print("curr_loc", curr_loc, "curr_metric", curr_metric)
         # print("idx", idx)
+        if curr_metric < min_metric:
+            min_metric = curr_metric
+            min_breakpoint = curr_loc
+            min_distance_right = curr_loc - init_breakpoint_locus
 
         idx += 1
 
-    # find the index in locus_list less or equal to the current breakpoint
-    # that is the start of the search?
-    # raise
+    # print("min_metric", min_metric, min_breakpoint, min_distance_right)
+
+    return min_metric, min_breakpoint, min_distance_right
+
+    # # find the index in locus_list less or equal to the current breakpoint
+    # # that is the start of the search?
+    # # raise
 
     
 
-    pass
+    # pass
 
 
 def locs_to_use(covars, count, end, start, next_breakpoint):
@@ -360,13 +375,12 @@ def locs_to_use(covars, count, end, start, next_breakpoint):
         good_loci = loci[loci < end]
         good_covars = covars[good_covars_idx]
 
-    return good_covars, good_loci
+    return good_covars, good_loci.values
 
     
 if __name__ == "__main__":
 
     breakpoints = find_breakpoint_loci(df)
-    # print(breakpoints)
 
     loci = df.pos
     zero_metric, loci_to_compute_later, later_bps = compute_zero_metric(loci.tolist(), partitions, breakpoints)
@@ -379,19 +393,102 @@ if __name__ == "__main__":
     metric_sum, nonzero = compute_sum_and_nonzero(loci_to_compute_later, later_bps, covars.i.values, covars.j.values, covars.val.values, autocovar)
 
     starts_ends = search_starts_ends(breakpoints, partitions)
+    assert len(starts_ends) == len(breakpoints), " ".join([str(l) for l in [len(starts_ends),len(breakpoints)]])
+    print(starts_ends)
 
-    for count, (start, end, breakpoint, next_breakpoint) in enumerate(starts_ends.itertuples(index=False)):
+    """
+self.snp_first = start_search
+self.snp_last = stop_search
 
-        good_covars, good_loci = locs_to_use(covars, count, end, start, next_breakpoint)
+tmp_partitions = flat.get_final_partitions(self.input_config, self.name, start_search, stop_search)
 
-        v, h = initialize_search(good_covars, autocovar)
+if initial_breakpoint_index+1 < len(breakpoints):
+    self.snp_top = breakpoints[initial_breakpoint_index+1]
+else:
+    self.snp_top = tmp_partitions[len(tmp_partitions)-1][1]
 
-        snp_bottom_idx = np.searchsorted(loci, start, side="right") - 1
-        # print("snp_bottom_idx", snp_bottom_idx)
-        snp_top_idx = np.searchsorted(loci, end) - 1
-        # print("snp_top_idx", snp_top_idx)
+# This is the bottom bound for the search space (bottom border)
+if initial_breakpoint_index-1 >= 0:
+    self.snp_bottom = breakpoints[initial_breakpoint_index-1]
+else:
+    self.snp_bottom = tmp_partitions[0][0]
+    """
 
-        local_search(good_loci, v, h, breakpoint, snp_bottom_idx, snp_top_idx, metric_sum, zero_metric)
+    def read_partition(p_num):
+
+        pass
+
+    def find_start_locus(curr_locus, loci, snp_bottom):
+
+        if curr_locus < 0:
+            for i, locus in enumerate(loci):
+                if locus >= snp_bottom:
+                    return i, locus
+        else:
+            return loci.index(curr_locus), curr_locus
+
+    def find_end_locus(partitions, loci, snp_last):
+
+        if p_num + 1 < len(partitions):
+            end_locus = partitions.iloc[p_num + 1, 0] # start of next partition
+            end_locus_index = -1
+            return end_locus_index, end_locus
+        else:
+            for i in reversed(range(0, len(loci))):
+                if loci[i] <= snp_last:
+                    return i, end_locus
+
+    def update_covar_and_loci(covar, loci, pos_to_delete_below, partition_to_add):
+        pass
+
+def read_partitions(partitions):
+    snp_bottom = 0
+    snp_last = 0
+    for p_num, partition in enumerate(partitions[:-1]):
+
+        to_preread = []
+        last_pnum = -1
+        if snp_bottom >= partition[0]:
+            to_preread.append(p_num)
+            last_pnum = p_num
+        else:
+            break
+
+        covar, loci = read_partition(to_preread)
+
+        curr_locus = -1
+        for p_num, partition in enumerate(partitions[last_pnum + 1:], last_pnum + 1):
+
+            covar, loci = update_covar_and_loci(covar, loci, pos_to_delete_below, partition_to_add)
+
+            curr_locus_index, curr_locus = find_start_locus(curr_locus, loci, snp_bottom)
+            end_locus_index, end_locus = find_end_locus(curr_locus, loci, snp_last)
+
+            # here we can have teh codez
+            while curr_locus <= end_locus:
+                loci_
+
+
+
+        # read partition
+    # for count, (start, end, breakpoint, next_breakpoint) in enumerate(starts_ends.itertuples(index=False)):
+
+    #     good_covars, good_loci = locs_to_use(covars, count, end, start, next_breakpoint)
+
+    #     if count < len(starts_ends) - 1:
+    #         end_locus = partitions.iloc[count + 1, 0]
+    #     else:
+    #         end_locus = good_loci[np.searchsorted(good_loci, end) - 1]
+
+    #     v, h = initialize_search(good_covars, autocovar)
+
+    #     snp_bottom_idx = np.searchsorted(loci, start, side="right") - 1
+    #     # print("snp_bottom_idx", snp_bottom_idx)
+    #     snp_top_idx = np.searchsorted(loci, end) - 1
+    #     # print("snp_top_idx", snp_top_idx)
+
+    #     local_search_right(good_loci, v, h, breakpoint, snp_bottom_idx, snp_top_idx, metric_sum, zero_metric)
+    #     print("end_locus", end_locus)
 
     # v, h = initialize_search(covars, autocovar)
     # print(len(h))

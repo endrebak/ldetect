@@ -18,6 +18,9 @@ import decimal
 class LocalSearch:
     def __init__(self, name, start_search, stop_search, initial_breakpoint_index, breakpoints, total_sum, total_N, input_config):
         decimal.getcontext().prec=50
+
+        # print("start_search", start_search)
+        # print("start_search", start_search)
         
         self.name = name
         self.start_search = start_search
@@ -208,6 +211,7 @@ class LocalSearch:
 
             # print("start locus is", curr_locus)
             
+            print("self.snp_last", self.snp_last)
             if p_num+1 < len(self.partitions):
                 end_locus = self.partitions[p_num+1][0]
                 end_locus_index = -1
@@ -235,7 +239,7 @@ class LocalSearch:
 
             flat.print_log_msg('start_locus: '+repr(start_locus)+' end_locus: '+repr(end_locus)+' end_locus_index '+repr(end_locus_index))
             # This will not include the very last SNP of the complete range, but that shouldn't be too important since the end of the range shouldn't be a defining location for LD
-            print("checking that curr_locus is smaller than", end_locus, self.snp_top)
+            print("checking that curr_locus is smaller than", curr_locus, end_locus)
 
             while curr_locus <= end_locus:                     
                 self.add_locus_to_precomputed(curr_locus) # We want snp_bottom to be added here always (for later use). Same thing for snp_top
@@ -316,7 +320,7 @@ class LocalSearch:
             
         flat.print_log_msg('Starting local search...')
         
-        print("locus_list", len(self.precomputed["locus_list"]))
+        print("len(locus_list)", len(self.precomputed["locus_list"]))
         print("locus_list", self.precomputed["locus_list"][:5], self.precomputed["locus_list"][-5:])
         # In case the value itself is not in the list:
         try:
@@ -378,11 +382,12 @@ class LocalSearch:
             curr_loc = self.precomputed['locus_list'][curr_loc_ind]
 
             # counter = 0
-            print("self.snp_last", self.snp_last)
+            # print("self.snp_last", self.snp_last)
             while curr_loc <= self.snp_last:
-                print("curr_loc", curr_loc)
+                # print("curr_loc", curr_loc)
                 # print(curr_loc, "curr_sum", curr_sum, self.precomputed['data'][curr_loc]['sum_horiz'], self.precomputed['data'][curr_loc]['sum_vert'])
                 curr_sum = curr_sum - self.precomputed['data'][curr_loc]['sum_horiz'] + self.precomputed['data'][curr_loc]['sum_vert']
+                # counter += 1
                 
                 # print("_N curr_loc_ind", curr_loc_ind, snp_top_ind)
                 horiz_N = curr_loc_ind-snp_bottom_ind-1
@@ -401,6 +406,8 @@ class LocalSearch:
                     min_metric_details['sum'] = curr_sum
                     min_metric_details['N_zero'] = curr_N
                     min_distance_right = curr_loc - init_breakpoint_locus
+                    # print("min_metric", min_metric, min_breakpoint)
+                    # print("min_metric", min_metric, min_breakpoint, min_distance_right)
 
                 
                 if curr_loc_ind+1 < len(self.precomputed['locus_list']):
@@ -415,6 +422,7 @@ class LocalSearch:
             flat.print_log_msg('Locus_list: '+repr(self.precomputed['locus_list']))
             flat.print_log_msg('breakpoint_index_in_locus_list: '+ repr(breakpoint_index_in_locus_list))
         
+        print("min_metric", min_metric, min_breakpoint, min_distance_right)
 
         # print("counter", counter)
         # Reset search for left

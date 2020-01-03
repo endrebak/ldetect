@@ -177,12 +177,15 @@ def run_local_search_complete(chr_name, breakpoint_loci, begin, end, input_confi
     new_breakpoint, new_metric = run_local_search_single(chr_name, breakpoint_loci, 0, begin, b_stop, total_sum, total_N, input_config, metric_out)
     breakpoint_loci_local_search['loci'].append(new_breakpoint)
     breakpoint_loci_local_search['metrics'].append(new_metric)
+
+    # print("metric_out", metric_out)
     
     for locus_index in range(1, len(breakpoint_loci)-1):
         b_start = int(midpoint(breakpoint_loci[locus_index-1], breakpoint_loci[locus_index]))
         b_stop = int(midpoint(breakpoint_loci[locus_index], breakpoint_loci[locus_index+1])) #-1 # -1 so as to not overlap with next region! -> this is taken care of in local search
         
         new_breakpoint, new_metric = run_local_search_single(chr_name, breakpoint_loci, locus_index, b_start, b_stop, total_sum, total_N, input_config, metric_out)
+        # print("metric_out", metric_out)
         breakpoint_loci_local_search['loci'].append(new_breakpoint)
         breakpoint_loci_local_search['metrics'].append(new_metric)
 #         local_search_run = local_search.LocalSearch(chr_name, breakpoint_loci[locus_index-1], breakpoint_loci[locus_index+1], locus_index, breakpoint_loci, total_sum, total_N, input_config)       
@@ -200,6 +203,8 @@ def run_local_search_complete(chr_name, breakpoint_loci, begin, end, input_confi
     b_start = int(midpoint(breakpoint_loci[len(breakpoint_loci)-2], breakpoint_loci[len(breakpoint_loci)-1]))
     
     new_breakpoint, new_metric = run_local_search_single(chr_name, breakpoint_loci, len(breakpoint_loci)-1, b_start, end, total_sum, total_N, input_config, metric_out)
+
+    # print("metric_out", metric_out)
     breakpoint_loci_local_search['loci'].append(new_breakpoint)
     breakpoint_loci_local_search['metrics'].append(new_metric)
     
