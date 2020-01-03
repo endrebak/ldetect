@@ -305,9 +305,9 @@ class LocalSearch:
         self.precomputed['data'][key]['sum_horiz'] += val
 #         self.precomputed['data'][key]['N_horiz'] += 1
 
-        if curr_locus == 39967768:
-            print("sum_vert", self.precomputed['data'][curr_locus]['sum_vert'], val, curr_locus, key)
-            print("sum_horiz", self.precomputed['data'][curr_locus]['sum_horiz'])
+        # if curr_locus == 39967768:
+        #     print("sum_vert", self.precomputed['data'][curr_locus]['sum_vert'], val, curr_locus, key)
+        #     print("sum_horiz", self.precomputed['data'][curr_locus]['sum_horiz'])
         
     def add_locus_to_precomputed(self, curr_locus):
         self.precomputed['locus_list'].append(curr_locus)
