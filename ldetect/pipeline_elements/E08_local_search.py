@@ -335,7 +335,7 @@ class LocalSearch:
             return self.breakpoints[self.initial_breakpoint_index], None
 
 
-        print("self.snp_bottom", self.snp_bottom, len(self.precomputed["locus_list"]))
+        print("self.snp_bottom", self.snp_bottom) #, len(self.precomputed["locus_list"]))
         print("self.snp_top", self.snp_top)
         print("self.initial_breakpoint_index", self.initial_breakpoint_index)
         print("snp_bottom_ind", snp_bottom_ind)
@@ -363,7 +363,7 @@ class LocalSearch:
 
         min_metric = decimal.Decimal(self.total_sum) / decimal.Decimal(self.total_N)
         min_breakpoint = None
-        
+
         min_metric_details = {}
         min_metric_details['sum'] = self.total_sum
         min_metric_details['N_zero'] = self.total_N
@@ -376,21 +376,24 @@ class LocalSearch:
         if breakpoint_index_in_locus_list+1 < len(self.precomputed['locus_list']):
             curr_loc_ind = breakpoint_index_in_locus_list+1
             curr_loc = self.precomputed['locus_list'][curr_loc_ind]
-            
+
             # counter = 0
             print("self.snp_last", self.snp_last)
             while curr_loc <= self.snp_last:
                 print("curr_loc", curr_loc)
+                # print(curr_loc, "curr_sum", curr_sum, self.precomputed['data'][curr_loc]['sum_horiz'], self.precomputed['data'][curr_loc]['sum_vert'])
                 curr_sum = curr_sum - self.precomputed['data'][curr_loc]['sum_horiz'] + self.precomputed['data'][curr_loc]['sum_vert']
                 
-                print("curr_sum", curr_sum, self.precomputed['data'][curr_loc]['sum_horiz'], self.precomputed['data'][curr_loc]['sum_vert'])
-                print("curr_loc_ind", curr_loc_ind)
+                # print("_N curr_loc_ind", curr_loc_ind, snp_top_ind)
                 horiz_N = curr_loc_ind-snp_bottom_ind-1
                 vert_N = snp_top_ind-curr_loc_ind
                 curr_N = curr_N - horiz_N + vert_N
+                # print("horiz_N", horiz_N)
+                # print("vert_N", vert_N)
+                # print("curr_N", curr_N)
                 
                 curr_metric = decimal.Decimal(curr_sum) / decimal.Decimal(curr_N)
-                print("curr_loc", curr_loc, "curr_metric", curr_metric)
+                # print("curr_loc", curr_loc, "curr_metric", curr_metric)
                 
                 if curr_metric < min_metric:
                     min_metric = curr_metric

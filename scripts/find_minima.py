@@ -8,7 +8,8 @@ import math
 sqrt = math.sqrt
 import numpy as np
 
-from time import time
+from time import time, sleep
+
 
 f = argv[1]
 
@@ -202,10 +203,6 @@ def compute_zero_metric(loci, partitions, breakpoints):
 
 def compute_sum_and_nonzero(loci, bps, i_, j_, covars, autocovar):
 
-    # print("loci", loci)
-    # print("bps", bps)
-    # print("covars", covars)
-
     i = 0
     j = 0
     nonzero = 0
@@ -255,13 +252,17 @@ def initialize_search(covars, autocovars):
     # v, h = np.zeros(length), np.zeros(length)
     v, h = dict(zip(iloci, [0] * len(iloci))), dict(zip(jloci, [0] * len(jloci)))
 
+
     for i, j, val in covars.itertuples(index=False):
         corr_coeff = (val / math.sqrt(autocovars[i] * autocovars[j])) ** 2
         # print("ijval", i, j, val, corr_coeff, autocovars[i], autocovars[j])
+        # if i == 39967768:
+        #     print(i, j)
         v[i] += corr_coeff
         h[j] += corr_coeff
-        
-    print(v[39967768])
+
+    # print(v[39967768])
+    # sleep(2)
     # print(h[39967768])
     # raise
 
@@ -308,23 +309,30 @@ def search_starts_ends(breakpoints, partitions):
 def local_search(loci, v, h, breakpoint, snp_bottom_idx, snp_top_idx, metric_sum, zero_metric):
 
     idx = np.searchsorted(loci, breakpoint) + 1
-    loci = loci[loci.values[idx] < loci]
+    # print("idx", idx, loci.values[idx])
+    loci = loci[idx:]
+    # print("loci")
+    # print(loci)
 
     n_horiz = 0
     n_vert = 0
-    n_curr = 0
+    n_curr = zero_metric
     curr_sum = metric_sum
 
-    # print("curr_sum", curr_sum)
     for curr_loc in loci:
-        # print(h[curr_loc], v[curr_loc])
+
         curr_sum = curr_sum - h[curr_loc] + v[curr_loc]
         # print("curr_sum", curr_sum)
+        print("idx", idx)
         n_horiz = idx - snp_bottom_idx - 1
+        print("n_horiz", n_horiz)
         n_vert = snp_top_idx - idx
+        print("n_vert", n_vert)
         n_curr = n_curr - n_horiz + n_vert
+        print("n_curr", n_curr)
 
         curr_metric = curr_sum / n_curr
+        print(curr_loc, "curr_metric", curr_metric, h[curr_loc], v[curr_loc])
         # print("curr_loc", curr_loc, "curr_metric", curr_metric)
         # print("idx", idx)
 
@@ -337,6 +345,22 @@ def local_search(loci, v, h, breakpoint, snp_bottom_idx, snp_top_idx, metric_sum
     
 
     pass
+
+
+def locs_to_use(covars, count, end, start, next_breakpoint):
+
+    if count != 0:
+        good_covars_idx = (covars.i < end) & (covars.j <= next_breakpoint) & (covars.i > start)
+        good_covars = covars[good_covars_idx]
+        good_loci_idx = (loci < end) & (loci > start)
+        good_loci = loci[good_loci_idx]
+
+    else:
+        good_covars_idx = (covars.i < end) & (covars.j <= next_breakpoint) 
+        good_loci = loci[loci < end]
+        good_covars = covars[good_covars_idx]
+
+    return good_covars, good_loci
 
     
 if __name__ == "__main__":
@@ -355,42 +379,20 @@ if __name__ == "__main__":
     metric_sum, nonzero = compute_sum_and_nonzero(loci_to_compute_later, later_bps, covars.i.values, covars.j.values, covars.val.values, autocovar)
 
     starts_ends = search_starts_ends(breakpoints, partitions)
-    # print(starts_ends)
-    # raise
-    # raise
 
-    for count, (start, end, breakpoint, nbp) in enumerate(starts_ends.itertuples(index=False)):
-        print(start, end, breakpoint, nbp)
-        if count != 0:
-            good_covars_idx = (covars.i < end) & (covars.j < nbp) & (covars.i > start)
-            good_covars = covars[good_covars_idx]
-            good_loci_idx = (loci < end) & (loci > start)
-            good_loci = loci[good_loci_idx]
+    for count, (start, end, breakpoint, next_breakpoint) in enumerate(starts_ends.itertuples(index=False)):
 
-        else:
-            good_covars_idx = (covars.i < end) & (covars.j < nbp) 
-            good_loci = loci[loci < end]
-            good_covars = covars[good_covars_idx]
-
-        # print(good_covars[good_covars.i == 39967768])
-        # raise
+        good_covars, good_loci = locs_to_use(covars, count, end, start, next_breakpoint)
 
         v, h = initialize_search(good_covars, autocovar)
 
-        # print(len(good_loci))
         snp_bottom_idx = np.searchsorted(loci, start, side="right") - 1
-        snp_top_idx = np.searchsorted(loci, end) 
+        # print("snp_bottom_idx", snp_bottom_idx)
+        snp_top_idx = np.searchsorted(loci, end) - 1
+        # print("snp_top_idx", snp_top_idx)
 
-        # print("----" * 5)
-        # print("bottom", snp_bottom_idx)
-        # print("top", snp_top_idx)
-
-
-
-        # print("diff", snp_top_idx - snp_bottom_idx)
         local_search(good_loci, v, h, breakpoint, snp_bottom_idx, snp_top_idx, metric_sum, zero_metric)
 
-        
     # v, h = initialize_search(covars, autocovar)
     # print(len(h))
     
