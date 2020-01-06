@@ -19,8 +19,8 @@ class LocalSearch:
     def __init__(self, name, start_search, stop_search, initial_breakpoint_index, breakpoints, total_sum, total_N, input_config):
         decimal.getcontext().prec=50
 
-        # print("start_search", start_search)
-        # print("start_search", start_search)
+        print(" *** start_search", start_search)
+        print(" *** stop_search", stop_search)
         
         self.name = name
         self.start_search = start_search
@@ -94,13 +94,13 @@ class LocalSearch:
         self.snp_last = stop_search
 
         flat.print_log_msg('snp_last: '+repr(self.snp_last))
-        
+
         # This is the upper bound for the search space (upper border)
         if initial_breakpoint_index+1 < len(breakpoints):
             self.snp_top = breakpoints[initial_breakpoint_index+1]
         else:
             self.snp_top = tmp_partitions[len(tmp_partitions)-1][1]
-        
+
         flat.print_log_msg('snp_top: '+repr(self.snp_top))
 
         # This is the bottom bound for the search space (bottom border)
@@ -125,6 +125,7 @@ class LocalSearch:
         self.end_locus = -1
         self.end_locus_index = -1
     
+
     def init_search(self, lean=True):
         if lean:
             return self.init_search_lean()
@@ -144,6 +145,7 @@ class LocalSearch:
             raise Exception('Error: dynamic_delete should be True for local search!') 
     
         flat.print_log_msg('Start local search init') 
+        print("self.partitions", self.partitions)
 
         # pre-read all relevant partitions at beginning!
         last_p_num = -1
@@ -155,6 +157,8 @@ class LocalSearch:
                 last_p_num = p_num_init
             else:
                 break
+
+        print("===", self.snp_bottom, self.snp_top, self.snp_first, self.snp_last)
 
         # print("after reading, len is", len(self.locus_list))
         curr_locus = -1
@@ -239,7 +243,7 @@ class LocalSearch:
 
             flat.print_log_msg('start_locus: '+repr(start_locus)+' end_locus: '+repr(end_locus)+' end_locus_index '+repr(end_locus_index))
             # This will not include the very last SNP of the complete range, but that shouldn't be too important since the end of the range shouldn't be a defining location for LD
-            print("checking that curr_locus is smaller than", curr_locus, end_locus)
+            print("checking that curr_locus is smaller than", curr_locus, end_locus, "oooo")
 
             while curr_locus <= end_locus:                     
                 self.add_locus_to_precomputed(curr_locus) # We want snp_bottom to be added here always (for later use). Same thing for snp_top
@@ -250,6 +254,7 @@ class LocalSearch:
                     for key, el in self.matrix[curr_locus].items():
                         # don't take into account anything over snp_top
                         if key <= self.snp_top:                        
+                            # print("adding", curr_locus, key, el)
                             corr_coeff = self.matrix[curr_locus][key] / math.sqrt( self.matrix[curr_locus][curr_locus] * self.matrix[key][key] )
                             # print("ijval", curr_locus, key, self.matrix[curr_locus][key], corr_coeff, self.matrix[curr_locus][curr_locus], self.matrix[key][key])
                             # print("ijval", corr_coeff ** 2)
@@ -265,14 +270,16 @@ class LocalSearch:
                     curr_locus_index+=1
                     curr_locus = self.locus_list[curr_locus_index]
                 else:
-                    flat.print_log_msg('curr_locus_index out of bounds') # The possibility of this happening is only at the end of the range [usually chromosome] (end of last partition)
+                    flat.print_log_msg('curr_locus_index out of bounds' + str(len(self.precomputed['data'][curr_locus]['sum_horiz']))) # The possibility of this happening is only at the end of the range [usually chromosome] (end of last partition)
                     break
     
             print("len(self.locus_list)", len(self.locus_list))
+
             # flat.delete_loci_smaller_than_and_output_matrix_to_file(end_locus, self.matrix, locus_list, locus_list_deleted, cnst.const['out_matrix_filename'])
             if self.dynamic_delete:
                 flat.print_log_msg('Deleting loci not required any more')
                 flat.delete_loci_smaller_than_leanest(end_locus, self.matrix, self.locus_list)
+
     
         self.start_locus = start_locus
         self.start_locus_index = start_locus_index
@@ -319,11 +326,14 @@ class LocalSearch:
             self.init_search()
             
         flat.print_log_msg('Starting local search...')
-        
+
+        print("addy", len(self.precomputed['data']))
+
         print("len(locus_list)", len(self.precomputed["locus_list"]))
         print("locus_list", self.precomputed["locus_list"][:5], self.precomputed["locus_list"][-5:])
         # In case the value itself is not in the list:
         try:
+            print("hiihihih", self.snp_bottom, self.snp_top)
             snp_bottom_ind = binsrch.find_ge_ind(self.precomputed['locus_list'], self.snp_bottom)
             snp_top_ind = binsrch.find_le_ind(self.precomputed['locus_list'], self.snp_top)
         except Exception as e:

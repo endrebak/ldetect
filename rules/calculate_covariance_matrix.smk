@@ -13,8 +13,6 @@ rule effective_population_size:
             egs_h.write(str(egs) + "\n")
 
 
-
-
 rule subset_on_population:
     input:
         variants = rules.fetch_variants.output[0],
@@ -34,8 +32,10 @@ rule index_population_vcf:
     shell:
         "tabix -f {input[0]}"
 
+
 covariate_outfile = "{prefix}/partition_covariances/{population}/{chromosome}/{start}_{end}.vcf.gz"
 _covariate_outfile = "{prefix}/partition_covariances/{population}/{chromosome}/{{start}}_{{end}}.vcf.gz"
+
 
 rule covariance_matrix:
     input:
@@ -47,10 +47,6 @@ rule covariance_matrix:
     output:
         "{prefix}/partition_covariances/{population}/{chromosome}/{start}_{end}.tsv.gz"
     run:
-        # df = pd.read_table(input.intervals, header=None, usecols=[0, 1], sep=" ", nrows=None)
-        # df = df.tail(int(len(df)/2)).tail(1)
-        # df = df.head(3).tail(1)
-        # print(df)
         w = wildcards
 
 
@@ -68,23 +64,11 @@ rule covariance_matrix:
 
         c = chromosome.replace("chr", "")
 
-        # outfile = _covariate_outfile.format(**locals())
-        # outfile_template = output[0] + "/" + "{start}_{end}.txt.gz"
-
         template = f"""tabix {input.variants} {c}:{start}-{end} | cut -f 2,3,10- | tr "|" "\\t" |
 python scripts/calc_covar.py {input.genetic_maps} {input.individuals_to_use} {effective_population_size} {covariance_cutoff} | gzip > {output[0]}"""
-        # print(template)
+
         shell(template)
 
-        # from time import time
-        # for i, (_, (start, end)) in enumerate(df.iterrows()):
-        #     tstart = time()
-        #     print(i, len(df), i/len(df))
-        #     outfile = outfile_template.format(start=start, end=end)
-        #     cmd = template.format(start=start, end=end, outfile=outfile)
-        #     shell(cmd)
-        #     tend = time()
-        #     print("Took:", tend - tstart)
 
 rule intervals_to_parquet:
     input:
@@ -115,6 +99,7 @@ def get_intervals(w):
     # print(fs)
     return fs
 
+
 rule calculate_theta2:
     input:
         rules.individuals_in_reference_panel.output.samples
@@ -137,6 +122,7 @@ rule calculate_theta2:
         with open(output[0], "w+") as o:
             o.write(str(thetas2) + "\n")
 
+
 rule collect_covariances:
     input:
         get_intervals
@@ -145,18 +131,6 @@ rule collect_covariances:
     shell:
         "zcat {input} | gzip -9 > {output[0]}"
 
-
-# def glob_intervals(w):
-
-#     checkpoint_output = checkpoints.covariance_matrix.get(**w).output[0]
-#     print(checkpoint_output)
-
-#     return checkpoint_output
-
-# def theta2(f):
-#     val = open(f).readline().strip()
-#     print("theta2", val)
-#     return double(val)
 
 
 rule matrix_to_vector:
@@ -179,7 +153,6 @@ rule matrix_to_vector_much_ram:
         covariances = get_intervals,
         partitions = "{prefix}/partitions/{population}/{chromosome}.gz",
         theta2 = rules.calculate_theta2.output[0]
-        # checkpoints.partition_chromosomes.output
     output:
         "{prefix}/partitions/covariance_much_ram/{population}/{chromosome}.txt"
     benchmark:

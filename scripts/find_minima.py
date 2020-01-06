@@ -19,26 +19,19 @@ import numpy as np
 
 from time import time, sleep
 
-
 f = argv[1]
 
 df = pd.read_table(f, header=None, names="pos val".split())
 
-f2 = argv[2]
-
-partitions = pd.read_table(f2, header=None, sep=" ")
+partition_file = argv[2]
+# print(partition_file)
+partitions = pd.read_table(partition_file, sep=" ", header=None)
+partitions.index = range(len(partitions))
+partitions.columns = ["Start", "End"]
+# print(partitions)
 
 covariance_files = argv[3:]
 
-# def _apply_filter(a, width):
-
-#     val = (2 * width + 1)
-#     moving_avg_a = np.ones(val) * 1/(val)
-#     # start = time()
-#     a = sig.get_window('hanning', val)
-#     # end = time()
-#     # print("took", end - start)
-#     return a
 
 def _apply_filter(arr, width):
 
@@ -296,6 +289,8 @@ def initialize_search(covars, autocovars):
 
 
 def search_starts_ends(breakpoints, partitions):
+
+
     diff = pd.Series(breakpoints).diff()
     # print(diff)
     search_starts = (breakpoints + (diff/2).shift(-1)).shift()
@@ -310,7 +305,15 @@ def search_starts_ends(breakpoints, partitions):
     bps_next = bps.shift(-1)
     bps_next.values[-1] = partitions.iloc[-1, 1]
     bps_next = bps_next.astype(int)
-    df = pd.concat([search_starts, search_ends, bps, bps_next], axis=1)
+
+    bps_last = bps.shift(1)
+    bps_last.values[0] = partitions.iloc[0, 0]
+    bps_last = bps_last.astype(int)
+    df = pd.concat([search_starts, search_ends, bps, bps_last, bps_next], axis=1)
+    df.columns = ["SearchStart", "SearchEnd", "Breakpoint", "LastBreakpoint", "NextBreakpoint"]
+
+    # partition_end = relevant_partitions(partitions, )
+    # search_end_last = relevant_partitions(partitions, )
 
     return df
 
@@ -407,7 +410,12 @@ else:
 
 def read_partitions(pfiles):
 
-    return pd.concat([read_partition(f) for f in pfiles]).reset_index(drop=True)
+    if pfiles:
+        df = pd.concat([read_partition(f) for f in pfiles]).reset_index(drop=True)
+        return df, df.i.drop_duplicates().reset_index(drop=True) 
+    else:
+        df = pd.DataFrame({"i": np.array([], dtype=int), "j": np.array([], dtype=int), "val": np.array([], dtype=float)})
+        return df, df.i
 
 
 def read_partition(pfile):
@@ -436,7 +444,8 @@ def find_end_locus(p_num, partitions, loci, snp_last):
     else:
         for i in reversed(range(0, len(loci))):
             if loci[i] <= snp_last:
-                return i, end_locus
+                return i, loci[i]
+
 
 def update_covar_and_loci(covar, loci, pos_to_delete_below, partition_file):
 
@@ -448,92 +457,265 @@ def update_covar_and_loci(covar, loci, pos_to_delete_below, partition_file):
     covar = covar.append(to_add).reset_index(drop=True)
     loci = loci.append(to_add.i.drop_duplicates()).reset_index(drop=True)
 
-    g = df.i.reset_index().groupby("i").index
+    g = covar.i.reset_index().groupby("i").index
     covar_starts = g.first().values
-    covar_ends = g.last().values
+    covar_ends = g.last().values + 1
 
     return covar, loci, covar_starts, covar_ends
 
 
-def precompute_values(partitions, partition_files):
+# def precompute_values(covar_dict, snp_top, snp_bottom, snp_first, snp_last):
 
-    v = create_fastdict()
-    h = create_fastdict()
+#     v = create_fastdict()
+#     h = create_fastdict()
 
-    snp_top = 0
-    snp_bottom = 0
-    snp_first = 0
-    snp_last = 0
-    initial_breakpoint_index = 0
+#     snp_top = 0
+#     snp_bottom = 0
+#     snp_first = 0
+#     snp_last = 0
+#     initial_breakpoint_index = 0
+#     end_locus = 0
+
+#     covar_dict_items = covar_dict.items()
+
+#     for p_num, ((partition_start, partition_end), f) in enumerate(covar_dict_items):
+
+#         to_preread = []
+#         last_pnum = -1
+#         if snp_bottom >= partition_start:
+#             to_preread.append(f)
+#             last_pnum = p_num
+#         else:
+#             break
+
+#         covar, loci = read_partitions(to_preread)
+
+#         curr_locus = -1
+#         for p_num, ((partition_start, partition_end), f) in enumerate(covar_dict_items[p_num + 1], p_num + 1):
+
+#             covar, loci, covar_starts, covar_ends = update_covar_and_loci(covar, loci, end_locus, f)
+#             autocovars = covar[covar.i == covar.j]
+#             autocovar = create_fastdict(autocovars.i.values, autocovars.val.values)
+
+#             start_locus_index, start_locus = find_start_locus(curr_locus, loci, snp_bottom)
+#             curr_locus_index, curr_locus = start_locus_index, start_locus
+#             end_locus_index, end_locus = find_end_locus(p_num, curr_locus, loci, snp_last)
+
+#             precomputed_loci = []
+
+#             # for curr_locus_index in range(curr_locus_index, len(loci)):
+#             while loci[curr_locus_index] <= end_locus:
+
+#                 precomputed_loci.append(curr_locus)
+
+#                 if (curr_locus > snp_first or initial_breakpoint_index == 0) and (curr_locus <= snp_last):
+
+#                     covar_start, covar_end = covar_starts[curr_locus_index], covar_ends[curr_locus_index]
+
+#                     for x in range(covar_start, covar_end):
+
+#                         if covar[x][1] <= snp_top:
+
+#                             i = covar[x][0]
+#                             j = covar[x][1]
+#                             val = covar[x][2]
+#                             corr_coeff = (val / math.sqrt((autocovar[i] * autocovar[j]))) ** 2
+#                             v[i] += corr_coeff
+#                             h[j] += corr_coeff
+
+#                 curr_locus_index += 1
+
+#         return v, h
+
+
+"""
+self.snp_first = start_search
+self.snp_last = stop_search
+
+tmp_partitions = flat.get_final_partitions(self.input_config, self.name, start_search, stop_search)
+
+if initial_breakpoint_index+1 < len(breakpoints):
+    self.snp_top = breakpoints[initial_breakpoint_index+1]
+else:
+    self.snp_top = tmp_partitions[len(tmp_partitions)-1][1]
+
+# This is the bottom bound for the search space (bottom border)
+if initial_breakpoint_index-1 >= 0:
+    self.snp_bottom = breakpoints[initial_breakpoint_index-1]
+else:
+    self.snp_bottom = tmp_partitions[0][0]
+"""
+
+
+
+def relevant_partitions(partitions, start, end):
+
+    for i, (pstart, pend) in enumerate(partitions.itertuples(index=False)):
+
+        if pstart <= start and pend >= start:
+            xstart = i
+
+        if pstart <= end and pend >= end:
+            xend = i + 1
+
+    rp = partitions.iloc[xstart:xend]
+
+    return list(zip(rp.Start, rp.End))
+
+
+def precompute_values(partitions, search_start, search_end, last_breakpoint, next_breakpoint):
+
+    iter_partitions = relevant_partitions(partitions, search_start, search_end)
+
+    curr_locus = -1
+
+    i = 0
+    to_preread = []
+    while i < len(iter_partitions) - 1 and last_breakpoint >= iter_partitions[i][0]:
+        pstart, pend = iter_partitions[i]
+        to_preread.append(covar_dict[pstart, pend])
+        i += 1
+
+    covar, loci = read_partitions(to_preread)
+
+    snp_bottom, snp_top, snp_first, snp_last = last_breakpoint, next_breakpoint, search_start, search_end
+
+    curr_locus = -1
     end_locus = 0
 
-    for p_num, partition in enumerate(partitions[:-1]):
+    for i in range(i, len(iter_partitions)):
 
-        to_preread = []
-        last_pnum = -1
-        if snp_bottom >= partition[0]:
-            to_preread.append(partition_files[p_num])
-            last_pnum = p_num
-        else:
-            break
+        pstart, pend = iter_partitions[i]
+        f = covar_dict[pstart, pend]
 
-        covar, loci = read_partitions(to_preread)
+        covar, loci, covar_starts, covar_ends = update_covar_and_loci(covar, loci, end_locus, f)
 
-        curr_locus = -1
-        for p_num, partition in enumerate(partitions[last_pnum + 1:], last_pnum + 1):
+        autocovars = covar[covar.i == covar.j]
 
-            covar, loci, covar_starts, covar_ends = update_covar_and_loci(covar, loci, end_locus, partition_files[p_num])
-            autocovars = covar[covar.i == covar.j]
-            autocovar = create_fastdict(autocovars.i.values, autocovars.val.values)
+        autocovar = create_fastdict(autocovars.i.values, autocovars.val.values)
 
-            start_locus_index, start_locus = find_start_locus(curr_locus, loci, snp_bottom)
-            curr_locus_index, curr_locus = start_locus_index, start_locus
-            end_locus_index, end_locus = find_end_locus(p_num, curr_locus, loci, snp_last)
+        start_locus_index, start_locus = find_start_locus(curr_locus, loci, snp_bottom)
+        curr_locus_index, curr_locus = start_locus_index, start_locus
+        end_locus_index, end_locus = find_end_locus(i, iter_partitions, loci, snp_last)
 
-            precomputed_loci = []
+        covar_view = covar.values
 
-            # for curr_locus_index in range(curr_locus_index, len(loci)):
-            while loci[curr_locus_index] <= end_locus:
+        v, h = defaultdict(int), defaultdict(int)
 
-                precomputed_loci.append(curr_locus)
+        while curr_locus_index < len(loci) and loci.values[curr_locus_index] <= end_locus:
 
-                if (curr_locus > snp_first or initial_breakpoint_index == 0) and (curr_locus <= snp_last):
+            # precomputed_loci.append(curr_locus)
+            curr_locus = loci.values[curr_locus_index]
 
-                    covar_start, covar_end = covar_starts[curr_locus_index], covar_ends[curr_locus_index]
+            if (curr_locus > snp_first or breakpoint_index == 0) and (curr_locus <= snp_last):
 
-                    for x in range(covar_start, covar_end):
+                covar_start, covar_end = covar_starts[curr_locus_index], covar_ends[curr_locus_index]
 
-                        if covar[x][1] <= snp_top:
+                for x in range(covar_start, covar_end):
 
-                            i = covar[x][0]
-                            j = covar[x][1]
-                            val = covar[x][2]
-                            corr_coeff = (val / math.sqrt((autocovar[i] * autocovar[j]))) ** 2
-                            v[i] += corr_coeff
-                            h[j] += corr_coeff
+                    if covar_view[x][1] <= snp_top:
 
-                curr_locus_index += 1
+                        i = covar_view[x][0]
+                        j = covar_view[x][1]
+                        val = covar_view[x][2]
+                        # print("adding", i, j, val)
+                        corr_coeff = (val / math.sqrt((autocovar[i] * autocovar[j]))) ** 2
 
-        return v, h # start_locus_index, start_locus, end_locus_index, end_locus
+                        v[i] += corr_coeff
+                        h[j] += corr_coeff
+
+            curr_locus_index += 1
+
+        precomputed_loci = loci.values[start_locus_index:end_locus_index]
+
+        return v, h, precomputed_loci
 
 
 if __name__ == "__main__":
 
+    from collections import defaultdict
+
+    assert len(covariance_files) == len(partitions)
+
+    covar_dict = {}
+    for f, (start, end) in zip(covariance_files, partitions.itertuples(index=False)):
+        covar_dict[start, end] = f
+
     breakpoints = find_breakpoint_loci(df)
-
-    loci = df.pos
-    zero_metric, loci_to_compute_later, later_bps = compute_zero_metric(loci.tolist(), partitions, breakpoints)
-
-    covars = pd.concat([pd.read_csv(f, sep=" ", usecols=[2, 3, 7], names="i j val".split())
-                                    for f in covariance_files])
-
-    autocovar = covars[covars.i.values == covars.j.values].drop("j", 1).set_index("i").squeeze().to_dict()
-
-    metric_sum, nonzero = compute_sum_and_nonzero(loci_to_compute_later, later_bps, covars.i.values, covars.j.values, covars.val.values, autocovar)
-
     starts_ends = search_starts_ends(breakpoints, partitions)
-    assert len(starts_ends) == len(breakpoints), " ".join([str(l) for l in [len(starts_ends),len(breakpoints)]])
+
     print(starts_ends)
+
+    for breakpoint_index, (search_start, search_end, breakpoint, last_breakpoint, next_breakpoint) in enumerate(starts_ends.itertuples(index=False)):
+
+        result = precompute_values(partitions, search_start, search_end, last_breakpoint, next_breakpoint)
+        v, h, precomputed_loci = result
+        print("result", precomputed_loci)
+        print(len(v))
+        print(len(h))
+
+
+            # print("snp_bottom", snp_bottom)
+            # print("snp_top", snp_top)
+            # snp_bottom_idx = np.searchsorted(precomputed_loci, snp_bottom, side="right") - 1
+            # # print("snp_bottom_idx", snp_bottom_idx)
+            # snp_top_idx = np.searchsorted(precomputed_loci, snp_top) - 1
+            # print("snp_top_idx", snp_top_idx)
+
+
+            # zero_metric, loci_to_compute_later, later_bps = compute_zero_metric(precomputed_loci, partitions, breakpoints)
+            # metric_sum, nonzero = compute_sum_and_nonzero(loci_to_compute_later, later_bps, covars.i.values, covars.j.values, covars.val.values, autocovar)
+
+            # local_search_right(precomputed_loci, v, h, breakpoint, snp_bottom_idx, snp_top_idx, metric_sum, zero_metric)
+            # print("end_locus", end_locus)
+
+
+        # return v, h
+        # print(len(v), len(h))
+        # print("here", len(set(v).union(set(h))))
+            # if curr_locus
+
+
+        # for i, (pstart, pend) in enumerate(iter_partitions.itertuples()):
+
+            # to_preread = []
+
+            #     last_pnum = i
+            # else:
+            #     break
+            # for p_num_init in range(0)
+            # v, h = precompute_values(covar_dict, snp_top, snp_bottom, snp_first, snp_last)
+
+        # snp_first, snp_last = search_start, search_end
+
+
+        # snp_bottom, snp_top = break
+        # print(last_breakpoint, next_breakpoint)
+
+        # flat.get_final_partitions(self.input_config, self.name, start_search, stop_search)
+        # partition i should be straddle snp_first, the latter straddle snp_last
+        # temp_partitions = 
+
+
+        
+        # snp_first, snp_last = start_search, stop_search
+
+        # snp_top, snp_bottom = top_bottom_snps()
+
+
+
+    # loci = df.pos
+    # zero_metric, loci_to_compute_later, later_bps = compute_zero_metric(loci.tolist(), partitions, breakpoints)
+
+    # covars = pd.concat([pd.read_csv(f, sep=" ", usecols=[2, 3, 7], names="i j val".split())
+    #                                 for f in covariance_files])
+
+    # autocovar = covars[covars.i.values == covars.j.values].drop("j", 1).set_index("i").squeeze().to_dict()
+
+    # metric_sum, nonzero = compute_sum_and_nonzero(loci_to_compute_later, later_bps, covars.i.values, covars.j.values, covars.val.values, autocovar)
+
+    # assert len(starts_ends) == len(breakpoints), " ".join([str(l) for l in [len(starts_ends),len(breakpoints)]])
+    # print(starts_ends)
 
 
 
