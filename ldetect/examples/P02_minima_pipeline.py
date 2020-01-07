@@ -71,7 +71,12 @@ def pipeline(input_fname, chr_name, dataset_path, n_snps_bw_bpoints, out_fname, 
 
     "just applies hanning to init_array"
     g = filt.apply_filter(np_init_array, found_width)
+    # print("raise", g)
+    # print("raise", np_init_array)
+    # print("raise", np_init_array_x)
     breakpoint_loci = filt.get_minima_loc(g, np_init_array_x)
+    # print("raise", breakpoint_loci)
+    # raise
     
     # METRIC
     # flat.print_log_msg('* Calculating metric for non-uniform breakpoints (minima of filtered data)...')
@@ -79,6 +84,9 @@ def pipeline(input_fname, chr_name, dataset_path, n_snps_bw_bpoints, out_fname, 
     # metric_out = apply_metric(chr_name, begin, end, cnst.const[dataset], breakpoint_loci)
     metric_out = apply_metric(chr_name, begin, end, config, breakpoint_loci)
     # flat.print_log_msg('Global metric:')
+    print("raise", metric_out)
+    raise
+
     # print_metric(metric_out)
     
     # METRIC FOR UNIFORM BREAKPOINTS

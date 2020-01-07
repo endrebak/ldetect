@@ -170,7 +170,7 @@ class LocalSearch:
             flat.print_log_msg('Reading partition: '+str(p))
             # Data must be read until snp_top!
             flat.read_partition_into_matrix_lean(self.partitions, p_num, self.matrix, self.locus_list, self.name, self.input_config, self.snp_bottom, self.snp_top)
-    
+
             # Determine first locus
             if curr_locus<0: # Either first partition or not found in first partition
                 # curr_locus = -1 # <- this should have been set to -1 before entering the main for loop
@@ -214,7 +214,7 @@ class LocalSearch:
                 # raise Exception('Error: curr_locus not found!')   
 
             # print("start locus is", curr_locus)
-            
+
             print("self.snp_last", self.snp_last)
             if p_num+1 < len(self.partitions):
                 end_locus = self.partitions[p_num+1][0]
@@ -236,7 +236,7 @@ class LocalSearch:
                 if not end_locus_found:
                     end_locus_index = 0
                     end_locus = self.locus_list[end_locus_index]
-            
+
             # flat.print_log_msg('self.locus_list control output: '+repr(self.locus_list))
 
             flat.print_log_msg('Running precompute for partition: '+str(p))
